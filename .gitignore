@@ -138,7 +138,7 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# TODO: Comment the next line if you want to checkin your web deploy settings 
+# TODO: Comment the next line if you want to checkin your web deploy settings
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
@@ -245,3 +245,16 @@ CodeCakeBuilder/UnitTestsDone.*.txt
 $StObjGen/
 CodeCakeBuilder/[Rr]elease/
 CodeCakeBuilder/[Rr]eleases/
+/CKSetup/WorkingDir/*
+
+# Yarn
+CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/cache/
+CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.pnp.*
+CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/*
+!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/plugins
+!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/releases
+!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/sdks
+!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/patches
+!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/versions
+
+/CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/WFATester.version.ts
