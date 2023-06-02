@@ -1,0 +1,30 @@
+{
+  "name": "@signature/wfa-tester",
+  "version": "0.0.0-0",
+  "description": "Test app for WebFrontAuth backend.",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "genversion --es6 --semi WFATester.version.ts && webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@signature/webfrontauth": "16.0.0-r07-01-0005-develop",
+    "axios": "^0.21.1",
+    "rxjs": "^6.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.3",
+    "css-loader": "^5.2.6",
+    "genversion": "^3.0.1",
+    "html-webpack-plugin": "^4.5.2",
+    "style-loader": "^2.0.0",
+    "ts-loader": "5.3.1",
+    "typescript": "^3.5.3",
+    "webpack": "4.27.1",
+    "webpack-cli": "3.1.2",
+    "webpack-dev-server": "3.1.10"
+  },
+  "packageManager": "yarn@3.0.2"
+}

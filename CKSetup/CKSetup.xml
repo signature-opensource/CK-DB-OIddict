@@ -1,0 +1,23 @@
+<Setup Engine="CK.Setup.StObjEngine, CK.StObj.Engine">
+  <Aspect Type="CK.Setup.SetupableAspectConfiguration, CK.Setupable.Model" Version="1"/>
+  <Aspect Type="CK.Setup.SqlSetupAspectConfiguration, CK.SqlServer.Setup.Model">
+    <DefaultDatabaseConnectionString>
+      Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true
+    </DefaultDatabaseConnectionString>
+  </Aspect>
+
+  <Aspect Type="CK.Setup.TypeScriptAspectConfiguration, CK.StObj.TypeScript">
+  </Aspect>
+
+  <BinPaths>
+    <BinPath Path="../CK.DB.OpenIddictSql.DefaultServer.App/bin/[Debug|Release]/net6.0">
+      <ProjectPath>../CK.DB.OpenIddictSql.DefaultServer.WebHost</ProjectPath>
+    </BinPath>
+
+  </BinPaths>
+
+  <WorkingDirectory>WorkingDir</WorkingDirectory>
+  <LogLevel>Debug</LogLevel>
+  <CKSetupName>CKSetup.CK.DB.OpenIddictSql</CKSetupName>
+  <PreferredTargetRuntimes>Net60</PreferredTargetRuntimes>
+</Setup>

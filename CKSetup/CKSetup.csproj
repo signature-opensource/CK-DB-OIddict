@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Message Text="Installing CKSetup." Importance="high" />
+        <!--First, the CKSetup tool defined in ../.config/dotnet-tools.json is restored (if needed).-->
+        <Exec Command="dotnet tool restore" />
+        <!--
+         Then, the CKSetup tool is ran, using a 'Release' log level for the Console that avoids too much noise in your "Build Output" window.
+         The file (LastRun.log) doesn't filter the logs: it will contain all the logs emitted by the process and the default level is driven
+         by the CKSetup.xml <LogLevel>Debug</LogLevel> element.
+
+         Note that each WorkingDirectory still contains its own CKSetup.log.
+        -->
+        <Delete Files="LastRun.log" />
+        <Message Text="Running CKSetup." Importance="high" />
+        <Exec Command="dotnet cksetup run CKSetup.xml -v Trace --logFile LastRun.log" />
+        <Message Text="CKSetup successful." Importance="high" />
+    </Target>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CK.DB.OpenIddictSql.DefaultServer.App\CK.DB.OpenIddictSql.DefaultServer.App.csproj" />
+    </ItemGroup>
+
+</Project>

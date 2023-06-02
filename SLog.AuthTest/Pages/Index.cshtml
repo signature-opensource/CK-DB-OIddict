@@ -1,0 +1,39 @@
+﻿@page
+@using Microsoft.AspNetCore.Http.Extensions
+@using System.Security.Claims
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Auth test weeee</h1>
+    @if (User.Identity is { IsAuthenticated: true })
+    {
+        <p>
+            You're authenticated!<br />
+            Name: @User.Identity.Name<br />
+            AuthenticationType: @User.Identity.AuthenticationType<br />
+            NameIdentifier: @User.FindFirst(ClaimTypes.NameIdentifier)?.Value<br />
+        </p>
+        <h2>Your Claims</h2>
+        <ul>
+            @foreach (var c in User.Claims)
+            {
+                <li>@c.Type: @c.Value</li>
+            }
+        </ul>
+        <p>
+            @Html.ActionLink("Logout", "Logout", "Auth", new { redirectUrl = Request.GetDisplayUrl() })
+        </p>
+    }
+    else
+    {
+        <p>
+            You're not authenticated!
+        </p>
+        <p>
+            @Html.ActionLink("Login", "Login", "Auth", new { redirectUrl = Request.GetDisplayUrl() })
+        </p>
+    }
+</div>

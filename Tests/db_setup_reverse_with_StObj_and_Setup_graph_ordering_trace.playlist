@@ -1,0 +1,23 @@
+<Playlist Version="2.0">
+  <Rule Name="Includes" Match="Any">
+    <Rule Match="All">
+      <Property Name="Solution" />
+      <Rule Match="All">
+        <Property Name="Namespace" Value="DBSetup" />
+        <Rule Match="Any">
+          <Rule Match="All">
+            <Property Name="Class" Value="DBSetup" />
+            <Rule Match="Any">
+              <Rule Match="All">
+                <Property Name="TestWithNormalizedFullyQualifiedName" Value="DBSetup.DBSetup.db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" />
+                <Rule Match="Any">
+                  <Property Name="DisplayName" Value="db_setup_reverse_with_StObj_and_Setup_graph_ordering_trace" />
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>

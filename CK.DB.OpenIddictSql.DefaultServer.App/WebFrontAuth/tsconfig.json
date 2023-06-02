@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": ".",
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "module": "ESNext",
+    "target": "es2017",
+    "allowJs": true
+  },
+  "include": ["*.ts"],
+  "exclude": []
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <SignAssembly>false</SignAssembly>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CK.Core" Version="17.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Credentials" Version="6.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="TestResult.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SimpleGitVersion.Cake" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Releases\" />
+  </ItemGroup>
+</Project>

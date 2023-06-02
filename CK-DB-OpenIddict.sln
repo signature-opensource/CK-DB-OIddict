@@ -1,0 +1,87 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DD8E9B65-DF41-40CF-9995-5965585CF72E}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		NuGet.config = NuGet.config
+		RepositoryInfo.xml = RepositoryInfo.xml
+		Common\SharedKey.snk = Common\SharedKey.snk
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5E754B9E-84B8-426A-95B0-858D3EDCC19B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.OpenIddictSql.Tests", "Tests\CK.DB.OpenIddictSql.Tests\CK.DB.OpenIddictSql.Tests.csproj", "{0889FFE1-585C-4593-8850-BBDB0DCC9AE1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.DB.OpenIddictSql", "CK.DB.OpenIddictSql\CK.DB.OpenIddictSql.csproj", "{A2141FE3-5F9D-4626-BC63-BAD7AB19B41F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.OpenIddictSql.DefaultServer.App", "CK.DB.OpenIddictSql.DefaultServer.App\CK.DB.OpenIddictSql.DefaultServer.App.csproj", "{C304C492-5FEA-4E40-A315-54527A400657}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CKSetup", "CKSetup\CKSetup.csproj", "{949A68CE-5E28-4760-A5F8-B187B87516BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.OpenIddictSql.DefaultClient", "CK.DB.OpenIddictSql.DefaultClient\CK.DB.OpenIddictSql.DefaultClient.csproj", "{715CD889-B864-4A1C-9DF6-5AE12EBDF0DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLog.AuthTest", "SLog.AuthTest\SLog.AuthTest.csproj", "{6AECBCFD-EF0D-459B-BB8D-3ADEA70A7FDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.OpenIddictSql.DefaultServer.WebHost", "CK.DB.OpenIddictSql.DefaultServer.WebHost\CK.DB.OpenIddictSql.DefaultServer.WebHost.csproj", "{4A59D22C-6903-46B3-80AA-DC72C44D7345}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.DB.AspNet.OpenIddictSql", "CK.DB.AspNet.OpenIddictSql\CK.DB.AspNet.OpenIddictSql.csproj", "{8BB52C2F-3C14-436D-916A-B39C3D051EDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0889FFE1-585C-4593-8850-BBDB0DCC9AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0889FFE1-585C-4593-8850-BBDB0DCC9AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0889FFE1-585C-4593-8850-BBDB0DCC9AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0889FFE1-585C-4593-8850-BBDB0DCC9AE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2141FE3-5F9D-4626-BC63-BAD7AB19B41F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2141FE3-5F9D-4626-BC63-BAD7AB19B41F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2141FE3-5F9D-4626-BC63-BAD7AB19B41F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2141FE3-5F9D-4626-BC63-BAD7AB19B41F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C304C492-5FEA-4E40-A315-54527A400657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C304C492-5FEA-4E40-A315-54527A400657}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C304C492-5FEA-4E40-A315-54527A400657}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C304C492-5FEA-4E40-A315-54527A400657}.Release|Any CPU.Build.0 = Release|Any CPU
+		{949A68CE-5E28-4760-A5F8-B187B87516BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{949A68CE-5E28-4760-A5F8-B187B87516BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{949A68CE-5E28-4760-A5F8-B187B87516BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{949A68CE-5E28-4760-A5F8-B187B87516BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{715CD889-B864-4A1C-9DF6-5AE12EBDF0DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{715CD889-B864-4A1C-9DF6-5AE12EBDF0DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{715CD889-B864-4A1C-9DF6-5AE12EBDF0DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{715CD889-B864-4A1C-9DF6-5AE12EBDF0DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AECBCFD-EF0D-459B-BB8D-3ADEA70A7FDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AECBCFD-EF0D-459B-BB8D-3ADEA70A7FDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AECBCFD-EF0D-459B-BB8D-3ADEA70A7FDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AECBCFD-EF0D-459B-BB8D-3ADEA70A7FDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A59D22C-6903-46B3-80AA-DC72C44D7345}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A59D22C-6903-46B3-80AA-DC72C44D7345}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A59D22C-6903-46B3-80AA-DC72C44D7345}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A59D22C-6903-46B3-80AA-DC72C44D7345}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BB52C2F-3C14-436D-916A-B39C3D051EDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BB52C2F-3C14-436D-916A-B39C3D051EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BB52C2F-3C14-436D-916A-B39C3D051EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BB52C2F-3C14-436D-916A-B39C3D051EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0889FFE1-585C-4593-8850-BBDB0DCC9AE1} = {5E754B9E-84B8-426A-95B0-858D3EDCC19B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5044F9DA-815D-48CE-A4EE-9FA49432D361}
+	EndGlobalSection
+EndGlobal

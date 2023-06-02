@@ -245,7 +245,7 @@ CodeCakeBuilder/UnitTestsDone.*.txt
 $StObjGen/
 CodeCakeBuilder/[Rr]elease/
 CodeCakeBuilder/[Rr]eleases/
-/CKSetup/WorkingDir/*
+CKSetup/WorkingDir/*
 
 # Yarn
 CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/cache/

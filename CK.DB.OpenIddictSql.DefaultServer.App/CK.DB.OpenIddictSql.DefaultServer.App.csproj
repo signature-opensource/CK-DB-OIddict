@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>False</IsPackable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UserSecretsId>aspnet-CK.DB.OpenIddict.DefaultServer-9251EDDF-DC25-47BB-A999-0D76A96BA9A7</UserSecretsId>
+<!--    <RazorCompileOnBuild>true</RazorCompileOnBuild>-->
+<!--    <RazorCompileOnPublish>true</RazorCompileOnPublish>-->
+<!--    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>-->
+  </PropertyGroup>
+
+<!--  <ItemGroup>-->
+<!--    <RazorTargetAssemblyAttribute Include="CK.Setup.ExcludeFromSetupAttribute"/>-->
+<!--  </ItemGroup>-->
+<!--  -->
+  <ItemGroup>
+    <ProjectReference Include="../CK.DB.AspNet.OpenIddictSql/CK.DB.AspNet.OpenIddictSql.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.14" />
+    <PackageReference Include="CK.DB.User.UserPassword" Version="18.0.1"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Pages\" />
+  </ItemGroup>
+
+</Project>
