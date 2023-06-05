@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using CK.AspNet.Auth;
 using CK.DB.OpenIddictSql;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -21,28 +19,29 @@ namespace CK.DB.AspNet.OpenIddictSql
         /// <returns></returns>
         public static IServiceCollection AddOpenIddictAsp( this IServiceCollection services )
         {
+            var authenticationScheme = WebFrontAuthOptions.OnlyAuthenticationScheme;
+            var loginPath = "/";
+
+            services.AddSingleton<Configuration>
+            (
+                new Configuration
+                (
+                    authenticationScheme,
+                    loginPath
+                )
+            );
+
             services.AddControllers()
                     .AddApplicationPart( Assembly.Load( Assembly.GetExecutingAssembly().GetName().Name! ) );
 
             services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-                    // This should not create a cookie, it is a workaround to get a redirection.
-                    // By calling ChallengeAsync with WFA schema, you will be redirected to the login path.
-                    .AddCookie
-                    (
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        options =>
-                        {
-                            options.LoginPath = new PathString( "/" );
-                            // You should not see this cookie:
-                            options.Cookie.Name = "OpenIddictServer";
-                        }
-                    )
                     .AddWebFrontAuth
                     (
                         options =>
                         {
+                            //TODO: Let's see if AuthenticationCookieMode can be set to default.
                             options.CookieMode = AuthenticationCookieMode.RootPath;
-                            options.ForwardChallenge = CookieAuthenticationDefaults.AuthenticationScheme;
+                            options.AuthCookieName = ".oidcServerWebFront";
                         }
                     );
 
@@ -53,10 +52,10 @@ namespace CK.DB.AspNet.OpenIddictSql
                     (
                         options =>
                         {
-                            options.SetAuthorizationEndpointUris( "connect/authorize" )
-                                   .SetLogoutEndpointUris( "connect/logout" )
-                                   .SetTokenEndpointUris( "connect/token" )
-                                   .SetUserinfoEndpointUris( "connect/userinfo" );
+                            options.SetAuthorizationEndpointUris( ConstantsConfiguration.AuthorizeUri )
+                                   .SetLogoutEndpointUris( ConstantsConfiguration.LogoutUri )
+                                   .SetTokenEndpointUris( ConstantsConfiguration.TokenUri )
+                                   .SetUserinfoEndpointUris( ConstantsConfiguration.UserInfoUri );
 
                             options.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
 

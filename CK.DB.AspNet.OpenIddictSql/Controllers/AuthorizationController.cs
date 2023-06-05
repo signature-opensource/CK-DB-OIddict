@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
 
 namespace CK.DB.AspNet.OpenIddictSql.Controllers
@@ -29,28 +30,57 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
 
         private readonly UserTable _userTable;
 
+        private readonly string _challengeScheme;
+        private readonly string _loginUrl;
+
         public AuthorizationController
         (
             IOpenIddictApplicationManager applicationManager,
             IOpenIddictAuthorizationManager authorizationManager,
             IOpenIddictScopeManager scopeManager,
-            UserTable userTable
+            UserTable userTable,
+            Configuration configuration
         )
         {
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _scopeManager = scopeManager;
             _userTable = userTable;
+
+            _challengeScheme = configuration.AuthenticationScheme;
+            _loginUrl = configuration.LoginPath;
         }
 
-
-        [HttpGet( "~/connect/authorize" )]
-        [HttpPost( "~/connect/authorize" )]
-        [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> Authorize()
+        // This could be a strategy pattern to avoid the if statement.
+        /// <summary>
+        /// Challenge adapter that handles standard Challenge and WebFrontAuth.
+        /// </summary>
+        /// <param name="redirectUri">The uri that is passed as
+        /// <see cref="Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri"/>
+        /// to <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>Challenge <see cref="_challengeScheme"/></returns>
+        private IActionResult HandleChallenge( string redirectUri )
         {
-            var request = HttpContext.GetOpenIddictServerRequest()
-                       ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
+            if( _challengeScheme == WebFrontAuthOptions.OnlyAuthenticationScheme )
+                return Redirect
+                (
+                    $"{_loginUrl}{QueryString.Create( "ReturnUrl", redirectUri )}"
+                );
+
+            return Challenge
+            (
+                authenticationSchemes: _challengeScheme,
+                properties: new AuthenticationProperties { RedirectUri = redirectUri }
+            );
+        }
+
+        [HttpGet( ConstantsConfiguration.AuthorizeUri )]
+        [HttpPost( ConstantsConfiguration.AuthorizeUri )]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> AuthorizeAsync()
+        {
+            var oidcRequest = HttpContext.GetOpenIddictServerRequest()
+                           ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
 
             // Try to retrieve the user principal stored in the authentication cookie and redirect
             // the user agent to the login page (or to an external provider) in the following cases:
@@ -58,36 +88,38 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             //  - If the user principal can't be extracted or the cookie is too old.
             //  - If prompt=login was specified by the client application.
             //  - If a max_age parameter was provided and the authentication cookie is not considered "fresh" enough.
-            var result = await HttpContext.AuthenticateAsync( WebFrontAuthOptions.OnlyAuthenticationScheme );
-            var isAuthenticated = result.Principal?.Identity != null
-                               && result.Principal           != null
-                               && result.Principal.Identity.IsAuthenticated;
+
+            var authResult = await HttpContext.AuthenticateAsync( _challengeScheme );
+
+            var isAuthenticated = authResult.Principal?.Identity != null
+                               && authResult.Principal           != null
+                               && authResult.Principal.Identity.IsAuthenticated;
+            var isAuthCookieStale =
+            oidcRequest.MaxAge                                      != null
+         && authResult.Properties?.IssuedUtc                        != null
+         && DateTimeOffset.UtcNow - authResult.Properties.IssuedUtc > TimeSpan.FromSeconds( oidcRequest.MaxAge.Value );
+
             if
             (
-                result is not { Succeeded: true }
+                authResult is not { Succeeded: true }
              || !isAuthenticated
-             || request.HasPrompt( Prompts.Login )
-             || (
-                    request.MaxAge                                      != null
-                 && result.Properties?.IssuedUtc                        != null
-                 && DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds( request.MaxAge.Value )
-                )
+             || oidcRequest.HasPrompt( Prompts.Login )
+             || isAuthCookieStale
             )
             {
                 // If the client application requested promptless authentication,
                 // return an error indicating that the user is not logged in.
-                if( request.HasPrompt( Prompts.None ) )
+                if( oidcRequest.HasPrompt( Prompts.None ) )
                 {
                     return Forbid
                     (
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                         properties: new AuthenticationProperties
                         (
-                            new Dictionary<string, string>
+                            new Dictionary<string, string?>
                             {
-                                [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
-                                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
-                                "The user is not logged in."
+                                [Error] = Errors.LoginRequired,
+                                [ErrorDescription] = "The user is not logged in.",
                             }
                         )
                     );
@@ -95,7 +127,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
 
                 // To avoid endless login -> authorization redirects, the prompt=login flag
                 // is removed from the authorization request payload before redirecting the user.
-                var prompt = string.Join( " ", request.GetPrompts().Remove( Prompts.Login ) );
+                var prompt = string.Join( " ", oidcRequest.GetPrompts().Remove( Prompts.Login ) );
 
                 var parameters = Request.HasFormContentType
                 ? Request.Form.Where( parameter => parameter.Key  != Parameters.Prompt ).ToList()
@@ -105,19 +137,11 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
 
                 var redirectUri = Request.PathBase + Request.Path + QueryString.Create( parameters );
 
-                return Challenge
-                (
-                    authenticationSchemes: WebFrontAuthOptions.OnlyAuthenticationScheme,
-                    properties: new AuthenticationProperties { RedirectUri = redirectUri }
-                );
-                // return Redirect
-                // (
-                //     authenticationSchemes: WebFrontAuthOptions.OnlyAuthenticationScheme,
-                //     properties: new AuthenticationProperties { RedirectUri = redirectUri }
-                // );
+                return HandleChallenge( redirectUri );
             }
 
-            var userName = result.Principal.FindFirstValue( Claims.Name );
+            // Retrieve the profile of the logged in user.
+            var userName = authResult.Principal.FindFirstValue( Claims.Name );
             var userId = 0;
             using( var sqlCallContext = new SqlStandardCallContext() )
             {
@@ -125,12 +149,9 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             }
 
             if( userId <= 0 ) throw new InvalidOperationException( "The user details cannot be retrieved." );
-            // Retrieve the profile of the logged in user.
-            // var user = await _userManager.GetUserAsync(result.Principal) ??
-            //     throw new InvalidOperationException("The user details cannot be retrieved.");
 
             // Retrieve the application details from the database.
-            var application = await _applicationManager.FindByClientIdAsync( request.ClientId )
+            var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId! )
                            ?? throw new InvalidOperationException
                               (
                                   "Details concerning the calling client application cannot be found."
@@ -143,7 +164,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                 client: await _applicationManager.GetIdAsync( application ),
                 status: Statuses.Valid,
                 type: AuthorizationTypes.Permanent,
-                scopes: request.GetScopes()
+                scopes: oidcRequest.GetScopes()
             ).ToListAsync();
 
             switch( await _applicationManager.GetConsentTypeAsync( application ) )
@@ -156,11 +177,11 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                         properties: new AuthenticationProperties
                         (
-                            new Dictionary<string, string>
+                            new Dictionary<string, string?>
                             {
-                                [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
-                                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
-                                "The logged in user is not allowed to access this client application."
+                                [Error] = Errors.ConsentRequired,
+                                [ErrorDescription] =
+                                "The logged in user is not allowed to access this client application.",
                             }
                         )
                     );
@@ -169,7 +190,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                 // return an authorization response without displaying the consent form.
                 case ConsentTypes.Implicit:
                 case ConsentTypes.External when authorizations.Any():
-                case ConsentTypes.Explicit when authorizations.Any() && !request.HasPrompt( Prompts.Consent ):
+                case ConsentTypes.Explicit when authorizations.Any() && !oidcRequest.HasPrompt( Prompts.Consent ):
                     // Create the claims-based identity that will be used by OpenIddict to generate tokens.
                     var identity = new ClaimsIdentity
                     (
@@ -187,8 +208,11 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                     // Note: in this sample, the granted scopes match the requested scope
                     // but you may want to allow the user to uncheck specific scopes.
                     // For that, simply restrict the list of scopes before calling SetScopes.
-                    identity.SetScopes( request.GetScopes() );
-                    identity.SetResources( await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync() );
+                    identity.SetScopes( oidcRequest.GetScopes() );
+                    identity.SetResources
+                    (
+                        await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync()
+                    );
 
                     // Automatically create a permanent authorization to avoid requiring explicit consent
                     // for future authorization or token requests containing the same scopes.
@@ -213,18 +237,17 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
 
                 // At this point, no authorization was found in the database and an error must be returned
                 // if the client application specified prompt=none in the authorization request.
-                case ConsentTypes.Explicit when request.HasPrompt( Prompts.None ):
-                case ConsentTypes.Systematic when request.HasPrompt( Prompts.None ):
+                case ConsentTypes.Explicit when oidcRequest.HasPrompt( Prompts.None ):
+                case ConsentTypes.Systematic when oidcRequest.HasPrompt( Prompts.None ):
                     return Forbid
                     (
                         authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                         properties: new AuthenticationProperties
                         (
-                            new Dictionary<string, string>
+                            new Dictionary<string, string?>
                             {
-                                [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
-                                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
-                                "Interactive user consent is required."
+                                [Error] = Errors.ConsentRequired,
+                                [ErrorDescription] = "Interactive user consent is required.",
                             }
                         )
                     );
@@ -235,7 +258,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                 //     ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
                 //     Scope = request.Scope
                 // });
-                default: return await SimulateUserAcceptConsent();
+                default: return await SimulateUserAcceptConsentAsync();
                 // default:
                 // {
                 // var prompt = string.Join( " ", request.GetPrompts().Remove( Prompts.Login ) );
@@ -255,48 +278,16 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             }
         }
 
-
-//     [HttpGet( "/User/Login" )]
-//     public async Task<IActionResult> UserLogin()
-//     {
-//         var basicProvider = _authenticationDatabaseService.BasicProvider;
-//         var basicLoginResult = await basicProvider.LoginUserAsync( new SqlStandardCallContext(), "Aymeric", "passwd" );
-//
-//         if( basicLoginResult.IsSuccess is false ) return Forbid( CookieAuthenticationDefaults.AuthenticationScheme );
-//
-//         var claims = new List<Claim>
-//         {
-//             new( "username", "Aymeric" )
-//         };
-//         var identity = new ClaimsIdentity( claims, CookieAuthenticationDefaults.AuthenticationScheme );
-//         var principal = new ClaimsPrincipal( identity );
-//
-//         await HttpContext.SignInAsync( CookieAuthenticationDefaults.AuthenticationScheme, principal );
-//
-//         var redirectUri = "";
-//
-//         if( Request.Query.TryGetValue( "ReturnUrl", out var redirectUris ) )
-//         {
-//             redirectUri = redirectUris.SingleOrDefault();
-//         }
-//
-// //TODO: call this direct without redirectUri. It argumentException.
-//         if( redirectUri != default )
-//             return Redirect( redirectUri );
-//
-//         return Ok();
-//     }
-
-        public async Task<IActionResult> SimulateUserAcceptConsent()
+        public async Task<IActionResult> SimulateUserAcceptConsentAsync()
         {
-            var result = await Accept();
+            var result = await AcceptAsync();
 
             return result;
         }
 
         [Authorize, FormValueRequired( "submit.Accept" )]
-        [HttpPost( "~/connect/authorize" ), ValidateAntiForgeryToken]
-        public async Task<IActionResult> Accept()
+        [HttpPost( ConstantsConfiguration.AuthorizeUri ), ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptAsync()
         {
             var request = HttpContext.GetOpenIddictServerRequest()
                        ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
@@ -331,19 +322,21 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             // Note: the same check is already made in the other action but is repeated
             // here to ensure a malicious user can't abuse this POST-only endpoint and
             // force it to return a valid response without the external authorization.
-            if( !authorizations.Any()
-             && await _applicationManager.HasConsentTypeAsync( application, ConsentTypes.External ) )
+            if
+            (
+                !authorizations.Any()
+             && await _applicationManager.HasConsentTypeAsync( application, ConsentTypes.External )
+            )
             {
                 return Forbid
                 (
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                     properties: new AuthenticationProperties
                     (
-                        new Dictionary<string, string>
+                        new Dictionary<string, string?>
                         {
-                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ConsentRequired,
-                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
-                            "The logged in user is not allowed to access this client application."
+                            [Error] = Errors.ConsentRequired,
+                            [ErrorDescription] = "The logged in user is not allowed to access this client application.",
                         }
                     )
                 );
@@ -388,14 +381,14 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
         }
 
         [Authorize, FormValueRequired( "submit.Deny" )]
-        [HttpPost( "~/connect/authorize" ), ValidateAntiForgeryToken]
+        [HttpPost( ConstantsConfiguration.AuthorizeUri ), ValidateAntiForgeryToken]
         // Notify OpenIddict that the authorization grant has been denied by the resource owner
         // to redirect the user agent to the client application using the appropriate response_mode.
         public IActionResult Deny() => Forbid( OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
 
 
-        [HttpPost( "~/connect/token" ), IgnoreAntiforgeryToken, Produces( "application/json" )]
-        public async Task<IActionResult> Exchange()
+        [HttpPost( ConstantsConfiguration.TokenUri ), IgnoreAntiforgeryToken, Produces( "application/json" )]
+        public async Task<IActionResult> ExchangeAsync()
         {
             var request = HttpContext.GetOpenIddictServerRequest()
                        ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
@@ -424,8 +417,8 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                     (
                         new Dictionary<string, string>
                         {
-                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
-                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
+                            [Error] = Errors.InvalidGrant,
+                            [ErrorDescription] =
                             "The token is no longer valid."
                         }
                     )
