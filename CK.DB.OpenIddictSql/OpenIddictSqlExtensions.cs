@@ -21,22 +21,22 @@ namespace CK.DB.OpenIddictSql
         public static IServiceCollection AddOpenIddictSql( this IServiceCollection services )
         {
             services.AddOpenIddict()
-                    .AddCore
-                    (
-                        options =>
-                        {
-                            options.SetDefaultApplicationEntity<Application>()
-                                   .SetDefaultAuthorizationEntity<Authorization>()
-                                   .SetDefaultScopeEntity<Scope>()
-                                   .SetDefaultTokenEntity<Token>();
+                    .AddCore( builder => builder.UseOpenIddictCoreSql() );
 
+            return services;
+        }
 
-                            options.AddApplicationStore<OpenIddictSqlApplicationStore>();
-                            options.AddAuthorizationStore<OpenIddictSqlAuthorizationStore>();
-                            options.AddScopeStore<OpenIddictSqlScopeStore>();
-                            options.AddTokenStore<OpenIddictSqlTokenStore>();
-                        }
-                    );
+        public static OpenIddictCoreBuilder UseOpenIddictCoreSql( this OpenIddictCoreBuilder builder )
+        {
+            builder.SetDefaultApplicationEntity<Application>()
+                   .SetDefaultAuthorizationEntity<Authorization>()
+                   .SetDefaultScopeEntity<Scope>()
+                   .SetDefaultTokenEntity<Token>();
+
+            builder.AddApplicationStore<OpenIddictSqlApplicationStore>();
+            builder.AddAuthorizationStore<OpenIddictSqlAuthorizationStore>();
+            builder.AddScopeStore<OpenIddictSqlScopeStore>();
+            builder.AddTokenStore<OpenIddictSqlTokenStore>();
 
             //TODO: Handle entities types to prevent conflicts.
             SqlMapper.AddTypeHandler( new JsonTypeHandler<Dictionary<CultureInfo, string>>() );
@@ -46,7 +46,7 @@ namespace CK.DB.OpenIddictSql
             SqlMapper.AddTypeHandler( new GuidToStringTypeHandler() );
             SqlMapper.AddTypeHandler( new StringToGuidTypeHandler() );
 
-            return services;
+            return builder;
         }
     }
 }

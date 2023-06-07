@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using CK.AspNet.Auth;
 using CK.DB.Actor;
 using CK.DB.AspNet.OpenIddictSql.Helpers;
 using CK.SqlServer;
@@ -31,7 +30,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
         private readonly UserTable _userTable;
 
         private readonly string _challengeScheme;
-        private readonly string _loginUrl;
+        private readonly string? _loginUrl;
 
         public AuthorizationController
         (
@@ -53,7 +52,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
 
         // This could be a strategy pattern to avoid the if statement.
         /// <summary>
-        /// Challenge adapter that handles standard Challenge and WebFrontAuth.
+        /// Challenge adapter that handles standard Challenge and custom redirect.
         /// </summary>
         /// <param name="redirectUri">The uri that is passed as
         /// <see cref="Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri"/>
@@ -61,7 +60,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
         /// <returns>Challenge <see cref="_challengeScheme"/></returns>
         private IActionResult HandleChallenge( string redirectUri )
         {
-            if( _challengeScheme == WebFrontAuthOptions.OnlyAuthenticationScheme )
+            if( _loginUrl is not null )
                 return Redirect
                 (
                     $"{_loginUrl}{QueryString.Create( "ReturnUrl", redirectUri )}"

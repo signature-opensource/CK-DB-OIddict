@@ -6,8 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using CK.AspNet.Auth;
 using CK.DB.AspNet.OpenIddictSql;
 using CK.DB.OpenIddictSql.Commands;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 
 namespace CK.DB.OpenIddictSql.DefaultServer.App;
@@ -36,7 +38,55 @@ public class Startup
         services.AddCKDatabase( _startupMonitor, Assembly.GetEntryAssembly()!, connectionString );
 
         services.AddRouting();
-        services.AddOpenIddictAsp();
+
+        services.AddOpenIddictAspWebFrontAuth
+        (
+            "/",
+            serverBuilder: server => server.AddDevelopmentEncryptionCertificate()
+                                           .AddDevelopmentSigningCertificate()
+        );
+
+        #region Explicit registration example
+
+        if( false )
+        {
+            services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
+                    .AddWebFrontAuth
+                    (
+                        options =>
+                        {
+                            //TODO: Let's see if AuthenticationCookieMode can be set to default.
+                            options.CookieMode = AuthenticationCookieMode.RootPath;
+                            options.AuthCookieName = ".oidcServerWebFront";
+                        }
+                    );
+
+            services.AddOpenIddict()
+                    .AddCore( builder => builder.UseOpenIddictCoreSql() )
+                    .AddServer
+                    (
+                        builder =>
+                        {
+                            builder.UseOpenIddictServerAsp( WebFrontAuthOptions.OnlyAuthenticationScheme, "/" );
+
+                            builder.AddDevelopmentEncryptionCertificate()
+                                   .AddDevelopmentSigningCertificate();
+                            builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
+                            builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
+                        }
+                    )
+                    .AddValidation
+                    (
+                        builder =>
+                        {
+                            builder.UseLocalServer();
+
+                            builder.UseAspNetCore();
+                        }
+                    );
+        }
+
+        #endregion
 
         // services.AddRazorPages()
         //         .AddRazorPagesOptions
