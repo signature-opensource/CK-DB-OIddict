@@ -74,8 +74,8 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             );
         }
 
-        [HttpGet( ConstantsConfiguration.AuthorizeUri )]
-        [HttpPost( ConstantsConfiguration.AuthorizeUri )]
+        [HttpGet( Constants.AuthorizeUri )]
+        [HttpPost( Constants.AuthorizeUri )]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> AuthorizeAsync()
         {
@@ -286,7 +286,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
         }
 
         [Authorize, FormValueRequired( "submit.Accept" )]
-        [HttpPost( ConstantsConfiguration.AuthorizeUri ), ValidateAntiForgeryToken]
+        [HttpPost( Constants.AuthorizeUri ), ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptAsync()
         {
             var request = HttpContext.GetOpenIddictServerRequest()
@@ -381,13 +381,13 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
         }
 
         [Authorize, FormValueRequired( "submit.Deny" )]
-        [HttpPost( ConstantsConfiguration.AuthorizeUri ), ValidateAntiForgeryToken]
+        [HttpPost( Constants.AuthorizeUri ), ValidateAntiForgeryToken]
         // Notify OpenIddict that the authorization grant has been denied by the resource owner
         // to redirect the user agent to the client application using the appropriate response_mode.
         public IActionResult Deny() => Forbid( OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
 
 
-        [HttpPost( ConstantsConfiguration.TokenUri ), IgnoreAntiforgeryToken, Produces( "application/json" )]
+        [HttpPost( Constants.TokenUri ), IgnoreAntiforgeryToken, Produces( "application/json" )]
         public async Task<IActionResult> ExchangeAsync()
         {
             var request = HttpContext.GetOpenIddictServerRequest()
