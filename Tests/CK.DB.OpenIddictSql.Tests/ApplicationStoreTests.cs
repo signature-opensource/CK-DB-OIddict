@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CK.DB.OpenIddictSql.Entities;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using OpenIddict.Abstractions;
@@ -16,18 +20,44 @@ namespace CK.DB.OpenIddictSql.Tests
         [Test]
         public async Task should_create_new_application_Async()
         {
-            var applicationManager = TestHelper.AutomaticServices.GetRequiredService<IOpenIddictApplicationManager>();
+            var clientId = "ckdb-default-app";
+            await ForceCreateApplicationAsync( clientId );
+        }
 
+        [Test]
+        public async Task requesting_two_scopes_should_not_throwAsync()
+        {
+            var clientId = nameof( requesting_two_scopes_should_not_throwAsync );
+            var applicationId = (await ForceCreateApplicationAsync( clientId )).ApplicationId;
+
+            var authorizationManager =
+            TestHelper.AutomaticServices.GetRequiredService<IOpenIddictAuthorizationManager>();
+
+            var subject = "aymeric";
+            var client = applicationId.ToString();
+            var status = "valid";
+            var type = "permanent";
+            var scopes = new List<string> { "openid", "profile" }.ToImmutableArray();
+
+            var authorizations = authorizationManager.FindAsync( subject, client, status, type, scopes ) as IAsyncEnumerable<Authorization>;
+            await foreach( var authorization in authorizations! )
+            {
+                authorization.Scopes.Count.Should().Be( 2 );
+            }
+        }
+
+        private async Task<Application> ForceCreateApplicationAsync( string clientId )
+        {
+            var applicationManager = TestHelper.AutomaticServices.GetRequiredService<IOpenIddictApplicationManager>();
             Debug.Assert( applicationManager != null, nameof( applicationManager ) + " != null" );
 
-            var clientId = "ckdb-default-app";
             var client = await applicationManager.FindByClientIdAsync( clientId );
             if( client != null )
             {
                 await applicationManager.DeleteAsync( client );
             }
 
-            await applicationManager.CreateAsync
+            var result = await applicationManager.CreateAsync
             (
                 new OpenIddictApplicationDescriptor
                 {
@@ -60,6 +90,9 @@ namespace CK.DB.OpenIddictSql.Tests
                     },
                 }
             );
+
+            var application = result as Application;
+            return application;
         }
     }
 }

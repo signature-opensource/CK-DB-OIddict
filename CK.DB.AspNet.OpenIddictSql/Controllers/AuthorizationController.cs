@@ -208,10 +208,8 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
                     // but you may want to allow the user to uncheck specific scopes.
                     // For that, simply restrict the list of scopes before calling SetScopes.
                     identity.SetScopes( oidcRequest.GetScopes() );
-                    identity.SetResources
-                    (
-                        await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync()
-                    );
+                    // Uncomment next line when Scope Store is implemented
+                    // identity.SetResources( await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync() );
 
                     // Automatically create a permanent authorization to avoid requiring explicit consent
                     // for future authorization or token requests containing the same scopes.
@@ -358,6 +356,7 @@ namespace CK.DB.AspNet.OpenIddictSql.Controllers
             // but you may want to allow the user to uncheck specific scopes.
             // For that, simply restrict the list of scopes before calling SetScopes.
             identity.SetScopes( request.GetScopes() );
+            // Uncomment next line when Scope Store is implemented
             // identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
 
             // Automatically create a permanent authorization to avoid requiring explicit consent

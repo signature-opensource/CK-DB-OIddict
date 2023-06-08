@@ -197,5 +197,4 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 - Rewrite dates handling. A workaround is used right now for authorization expiration. The rest is wrong.
 - Add consent form example to the default server.
 - Map claims
-- Startup configuration => for asp package, add a default asp and then a webFrontAuth startup.
-- Implement missing / incomplete stores => For example, handle multiple scopes. Mainly, be able to query json.
+- Implement missing / incomplete stores => For example, handle multiple scopes. Mainly, be able to query json. => This is in progress, but kind of working in a way.

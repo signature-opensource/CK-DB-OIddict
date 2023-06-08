@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.Json;
 using CK.DB.OpenIddictSql.Dapper;
@@ -43,6 +44,7 @@ namespace CK.DB.OpenIddictSql
             SqlMapper.AddTypeHandler( new JsonTypeHandler<HashSet<string>>() );
             SqlMapper.AddTypeHandler( new JsonTypeHandler<HashSet<Uri>>() );
             SqlMapper.AddTypeHandler( new JsonTypeHandler<Dictionary<string, JsonElement>>() );
+            SqlMapper.AddTypeHandler( new JsonTypeHandler<ImmutableArray<string>>() );
             SqlMapper.AddTypeHandler( new GuidToStringTypeHandler() );
             SqlMapper.AddTypeHandler( new StringToGuidTypeHandler() );
 
