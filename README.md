@@ -12,11 +12,13 @@
 
 Start with the AspNet package to quickly try it out of the box.
 
-## Usage
+It is recommended to give a try and follow the **Getting started** section right below.
+If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** or directly
+[CK.DB.AspNet.OpenIddictSql/README.md](CK.DB.AspNet.OpenIddictSql/README.md).
 
-### CK.DB.AspNet.OpenIddictSql
+## Getting started
 
-Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
+Implements *oidc code flow* with endpoints and full OpenIddict Server and Validation.
 
 **WebFrontAuth Quick start.**
 
@@ -34,155 +36,28 @@ services.AddOpenIddictAspWebFrontAuth
 );
 ```
 
-Then you need an actual front end, you can
-use [WebFrontAuth sample](https://github.com/Woinkk/CK-Sample-WebFrontAuth/tree/master/WFATester), hence the `loginPath`
-mapped to `"/"`.
-You can also directly look
-at [the same sample adapted for the flow in our example server](CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth).
+Then you need an actual front end, check out the sample [in our example server](CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth) that you can copy paste.
+The `loginPath` is mapped to `"/"`;
 
-Of course, you need an application :
+### Quick test
 
-```csharp
-// using static OpenIddict.Abstractions.OpenIddictConstants.ConsentTypes;
-// using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
-// using static OpenIddict.Abstractions.OpenIddictConstants.Requirements;
-// Inject IOpenIddictApplicationManager into _applicationManager
-
-await _applicationManager.CreateAsync
-(
-    new OpenIddictApplicationDescriptor
-    {
-        ClientId = "ckdb-default-app",
-        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-        ConsentType = Explicit,
-        DisplayName = "CK-DB Default application",
-        RedirectUris =
-        {
-            new Uri( "https://oidcdebugger.com/debug" ),
-            new Uri( "https://localhost:5044/signin-oidc" ),
-        },
-        PostLogoutRedirectUris =
-        {
-            new Uri( "https://localhost:7273/callback/logout/local" ),
-        },
-        Permissions =
-        {
-            Endpoints.Authorization,
-            Endpoints.Logout,
-            Endpoints.Token,
-            GrantTypes.AuthorizationCode,
-            ResponseTypes.Code,
-            Scopes.Email,
-            Scopes.Profile,
-            Scopes.Roles,
-        },
-        Requirements =
-        {
-            Features.ProofKeyForCodeExchange,
-        },
-    }
-);
-```
+Check out [OpenIddict Sample](https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Server/Worker.cs) to create an application.
 
 Go ahead and try the flow. You can use the [client example](SLog.AuthTest)
-or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com).
-
-**More granular configuration**
-
-This is the recommended startup, but may be verbose to begin with and the previous sample still is able to behave the
-same.
-
-This sample is the one to use if you don't want to use WebFrontAuth. Here I am still using WebFrontAuth but you can
-change the authentication scheme to fit your needs. Note that you also want to remove the `loginPath` if not necessary.
-
-```csharp
-services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-        .AddWebFrontAuth
-        (
-            options =>
-            {
-                options.CookieMode = AuthenticationCookieMode.RootPath;
-                options.AuthCookieName = ".oidcServerWebFront";
-            }
-        );
-
-services.AddOpenIddict()
-        .AddCore( builder => builder.UseOpenIddictCoreSql() )
-        .AddServer
-        (
-            builder =>
-            {
-                builder.UseOpenIddictServerAsp( WebFrontAuthOptions.OnlyAuthenticationScheme, "/" );
-
-                builder.AddDevelopmentEncryptionCertificate()
-                       .AddDevelopmentSigningCertificate();
-                builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
-                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
-            }
-        )
-        .AddValidation
-        (
-            builder =>
-            {
-                builder.UseLocalServer();
-
-                builder.UseAspNetCore();
-            }
-        );
-```
-
-Same as previous, create a front end and an application.
-
-### CK.DB.OpenIddictSql
-
-Implement Sql Stores and entities on OpenIddict Core.
-
-Use this package to have an sql implementation with CK Database. You can then follow
-the [Samples](https://github.com/openiddict/openiddict-samples) from OpenIddict. You can consider this package as a
-replacement of the EntityFramework one.
-
-```csharp
-// The stores are based on CK Database
-var connectionString = "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
-services.AddCKDatabase( new ActivityMonitor(), Assembly.GetEntryAssembly()!, connectionString );
-
-// Add OpenIddict code flow like in samples
-services.AddOpenIddict()
-        .AddCore
-        (
-            builder =>
-            {
-                // Configure OpenIddict to use the CK Database stores and models.
-                builder.UseOpenIddictCoreSql();
-            }
-        )
-        .AddServer
-        (
-            builder =>
-            {
-                // see OpenIddict samples
-            }
-        )
-        .AddValidation
-        (
-            builder =>
-            {
-                // see OpenIddict samples
-            }
-        );
-```
-
-And that is it.
+or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com) for example.
 
 ### Create an administration panel with Cris
 
-Using [Cris](CK.DB.OpenIddictSql/Cris/), you can build a front end to manage applications or else to create the best oidc provider !
+Using [Cris](CK.DB.OpenIddictSql/Cris), you can build a front end to manage applications or else to create the best
+oidc provider !
 
 ## About
 
-- CK.DB.OpenIddictSql.DefaultServer.App => An example on how to use the packages with WebFrontAuth.
-- SLog.AuthTest => A simple oidc client bound to the DefaultServer.
-- CK.DB.OpenIddictSql.DefaultClient => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
+- [CK.DB.AspNet.OpenIddictSql](CK.DB.AspNet.OpenIddictSql) => Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
+- [CK.DB.OpenIddictSql](CK.DB.OpenIddictSql) => Implement Sql Stores and entities on OpenIddict Core.
+- [CK.DB.OpenIddictSql.DefaultServer.App](CK.DB.OpenIddictSql.DefaultServer.App) => An example on how to use the packages with WebFrontAuth.
+- [SLog.AuthTest](SLog.AuthTest) => A simple oidc client bound to the DefaultServer.
+- [CK.DB.OpenIddictSql.DefaultClient](CK.DB.OpenIddictSql.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
   not.
 
 About unit tests => I don't think that much relevant. It would take a load of time for no much reason.
@@ -198,3 +73,4 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 - Add consent form example to the default server.
 - Map claims
 - Implement missing / incomplete stores => For example, handle multiple scopes. Mainly, be able to query json. => This is in progress, but kind of working in a way.
+- Replace '%@uri%' with concat('%', @uri, '%')

@@ -1,6 +1,49 @@
-﻿About technical implementation and choices
-For developers or this library
+﻿# CK.DB.OpenIddictSql
 
+## Getting started
+
+Implement Sql Stores and entities on OpenIddict Core.
+
+Use this package to have an sql implementation with CK Database. You can then follow
+the [Samples](https://github.com/openiddict/openiddict-samples) from OpenIddict. You can consider this package as a
+replacement of the EntityFramework one.
+
+```csharp
+// The stores are based on CK Database
+var connectionString = "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
+services.AddCKDatabase( new ActivityMonitor(), Assembly.GetEntryAssembly()!, connectionString );
+
+// Add OpenIddict code flow like in samples
+services.AddOpenIddict()
+        .AddCore
+        (
+            builder =>
+            {
+                // Configure OpenIddict to use the CK Database stores and models.
+                builder.UseOpenIddictCoreSql();
+            }
+        )
+        .AddServer
+        (
+            builder =>
+            {
+                // see OpenIddict samples
+            }
+        )
+        .AddValidation
+        (
+            builder =>
+            {
+                // see OpenIddict samples
+            }
+        );
+```
+
+And that is it.
+
+## About technical implementation and choices
+
+For developers or this library
 
 The core / main logic is handled by [Stores](OpenIddict/Stores). They are internally called by OpenIddict managers.
 Here they provide a way to access sql database created from [Db](Db).
