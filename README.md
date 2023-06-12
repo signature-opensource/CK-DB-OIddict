@@ -13,8 +13,7 @@
 Start with the AspNet package to quickly try it out of the box.
 
 It is recommended to give a try and follow the **Getting started** section right below.
-If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** or directly
-[CK.DB.AspNet.OpenIddictSql/README.md](CK.DB.AspNet.OpenIddictSql/README.md).
+If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** section or directly [CK.DB.AspNet.OpenIddictSql/README.md](CK.DB.AspNet.OpenIddictSql/README.md).
 
 ## Getting started
 
