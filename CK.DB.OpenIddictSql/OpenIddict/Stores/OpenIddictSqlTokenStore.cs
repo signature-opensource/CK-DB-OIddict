@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +114,7 @@ from CK.tOpenIddictToken
             // I follow the same implementation as OpenIddictEntityFrameworkCoreTokenStore
             // that filters on ApplicationId.
             string client,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -146,7 +147,7 @@ where t.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -158,7 +159,7 @@ where t.Subject = @subject
             string subject,
             string client,
             string status,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -193,7 +194,7 @@ where t.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -206,7 +207,7 @@ where t.Subject = @subject
             string client,
             string status,
             string type,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -243,7 +244,7 @@ where t.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -253,7 +254,7 @@ where t.Subject = @subject
         public async IAsyncEnumerable<Token> FindByApplicationIdAsync
         (
             string identifier,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( identifier );
@@ -284,7 +285,7 @@ where t.ApplicationId = @ApplicationId
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -294,7 +295,7 @@ where t.ApplicationId = @ApplicationId
         public async IAsyncEnumerable<Token> FindByAuthorizationIdAsync
         (
             string identifier,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( identifier );
@@ -325,7 +326,7 @@ where t.AuthorizationId = @AuthorizationId
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -394,7 +395,7 @@ where t.ReferenceId = @ReferenceId
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<Token> FindBySubjectAsync( string subject, CancellationToken cancellationToken )
+        public async IAsyncEnumerable<Token> FindBySubjectAsync( string subject, [EnumeratorCancellation] CancellationToken cancellationToken )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
 
@@ -424,22 +425,22 @@ where t.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetApplicationIdAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetApplicationIdAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.ApplicationId;
+            return ValueTask.FromResult( token.ApplicationId );
         }
 
         /// <inheritdoc />
-        public async ValueTask<TResult?> GetAsync<TState, TResult>
+        public ValueTask<TResult?> GetAsync<TState, TResult>
         (
             Func<IQueryable<Token>, TState, IQueryable<TResult>> query,
             TState state,
@@ -450,48 +451,48 @@ where t.Subject = @subject
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetAuthorizationIdAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetAuthorizationIdAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.AuthorizationId;
+            return ValueTask.FromResult( token.AuthorizationId );
         }
 
 
         /// <inheritdoc />
-        public async ValueTask<DateTimeOffset?> GetCreationDateAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<DateTimeOffset?> GetCreationDateAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.CreationDate;
+            return ValueTask.FromResult( token.CreationDate );
         }
 
         /// <inheritdoc />
-        public async ValueTask<DateTimeOffset?> GetExpirationDateAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<DateTimeOffset?> GetExpirationDateAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.ExpirationDate;
+            return ValueTask.FromResult( token.ExpirationDate );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetIdAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetIdAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.TokenId == default ? null : token.TokenId.ToString();
+            return ValueTask.FromResult( token.TokenId == default ? null : token.TokenId.ToString() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetPayloadAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetPayloadAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.Payload;
+            return ValueTask.FromResult( token.Payload );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync
+        public ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync
         (
             Token token,
             CancellationToken cancellationToken
@@ -499,57 +500,57 @@ where t.Subject = @subject
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.Properties.ToImmutableDictionary();
+            return ValueTask.FromResult( token.Properties.ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<DateTimeOffset?> GetRedemptionDateAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<DateTimeOffset?> GetRedemptionDateAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.RedemptionDate;
+            return ValueTask.FromResult( token.RedemptionDate );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetReferenceIdAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetReferenceIdAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.ReferenceId;
+            return ValueTask.FromResult( token.ReferenceId );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetStatusAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetStatusAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.Status;
+            return ValueTask.FromResult( token.Status );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetSubjectAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetSubjectAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.Subject;
+            return ValueTask.FromResult( token.Subject );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetTypeAsync( Token token, CancellationToken cancellationToken )
+        public ValueTask<string?> GetTypeAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
-            return token.Type;
+            return ValueTask.FromResult( token.Type );
         }
 
         /// <inheritdoc />
-        public async ValueTask<Token> InstantiateAsync( CancellationToken cancellationToken )
+        public ValueTask<Token> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return new Token();
+            return ValueTask.FromResult( new Token() );
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<Token> ListAsync( int? count, int? offset, CancellationToken cancellationToken )
+        public async IAsyncEnumerable<Token> ListAsync( int? count, int? offset, [EnumeratorCancellation] CancellationToken cancellationToken )
         {
             offset ??= 0;
             var countSql = count.HasValue ? "fetch next @count rows only" : string.Empty;
@@ -582,7 +583,7 @@ offset @offset rows
                 cancellationToken: cancellationToken
             );
 
-            foreach( var token in tokens.ToArray() )
+            foreach( var token in tokens )
             {
                 yield return token;
             }
@@ -593,7 +594,7 @@ offset @offset rows
         (
             Func<IQueryable<Token>, TState, IQueryable<TResult>> query,
             TState state,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             if( query == null ) throw new ArgumentNullException( nameof( query ) );
@@ -622,28 +623,29 @@ from CK.tOpenIddictToken
             );
 
             var tokensFiltered = query.Invoke( tokens.AsQueryable(), state );
-            foreach( var token in tokensFiltered.ToArray() )
+            foreach( var token in tokensFiltered )
             {
                 yield return token;
             }
         }
 
         /// <inheritdoc />
-        public async ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
+        public ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public async ValueTask SetApplicationIdAsync( Token token, string? identifier, CancellationToken cancellationToken )
+        public ValueTask SetApplicationIdAsync( Token token, string? identifier, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.ApplicationId = identifier;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetAuthorizationIdAsync
+        public ValueTask SetAuthorizationIdAsync
         (
             Token token,
             string? identifier,
@@ -653,10 +655,11 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.AuthorizationId = identifier;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetCreationDateAsync
+        public ValueTask SetCreationDateAsync
         (
             Token token,
             DateTimeOffset? date,
@@ -666,10 +669,11 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.CreationDate = date;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetExpirationDateAsync
+        public ValueTask SetExpirationDateAsync
         (
             Token token,
             DateTimeOffset? date,
@@ -679,18 +683,20 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.ExpirationDate = date;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPayloadAsync( Token token, string? payload, CancellationToken cancellationToken )
+        public ValueTask SetPayloadAsync( Token token, string? payload, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.Payload = payload;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPropertiesAsync
+        public ValueTask SetPropertiesAsync
         (
             Token token,
             ImmutableDictionary<string, JsonElement> properties,
@@ -701,13 +707,14 @@ from CK.tOpenIddictToken
 
             token.Properties.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( properties is null ) return;
+            if( properties is null ) return ValueTask.CompletedTask;
 
             token.Properties.AddRange( properties );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetRedemptionDateAsync
+        public ValueTask SetRedemptionDateAsync
         (
             Token token,
             DateTimeOffset? date,
@@ -717,38 +724,43 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.RedemptionDate = date;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetReferenceIdAsync( Token token, string? identifier, CancellationToken cancellationToken )
+        public ValueTask SetReferenceIdAsync( Token token, string? identifier, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.ReferenceId = identifier;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetStatusAsync( Token token, string? status, CancellationToken cancellationToken )
+        public ValueTask SetStatusAsync( Token token, string? status, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.Status = status;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetSubjectAsync( Token token, string? subject, CancellationToken cancellationToken )
+        public ValueTask SetSubjectAsync( Token token, string? subject, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.Subject = subject;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetTypeAsync( Token token, string? type, CancellationToken cancellationToken )
+        public ValueTask SetTypeAsync( Token token, string? type, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
 
             token.Type = type;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />

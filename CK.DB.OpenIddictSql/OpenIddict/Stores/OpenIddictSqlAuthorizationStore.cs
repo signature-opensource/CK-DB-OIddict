@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,14 +108,13 @@ from CK.tOpenIddictAuthorization
         }
 
         /// <inheritdoc />
-        /// <param name="client">The client applicationId associated with the authorization.</param>
         public async IAsyncEnumerable<Authorization> FindAsync
         (
             string subject,
             // I follow the same implementation as OpenIddictEntityFrameworkCoreAuthorizationStore
             // that filters on ApplicationId.
             string client,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -131,9 +131,8 @@ select
     auth.Subject,
     auth.Type
 from CK.tOpenIddictAuthorization auth
-join CK.tOpenIddictApplication app on app.ApplicationId = auth.ApplicationId
 where auth.Subject = @subject
-  and app.ApplicationId = @client;
+  and auth.ApplicationId = @client;
 ";
             var controller = _callContext[_authorizationTable];
 
@@ -144,7 +143,7 @@ where auth.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var authorization in authorizations.ToArray() )
+            foreach( var authorization in authorizations )
             {
                 yield return authorization;
             }
@@ -156,7 +155,7 @@ where auth.Subject = @subject
             string subject,
             string client,
             string status,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -174,9 +173,8 @@ select
     auth.Subject,
     auth.Type
 from CK.tOpenIddictAuthorization auth
-join CK.tOpenIddictApplication app on app.ApplicationId = auth.ApplicationId
 where auth.Subject = @subject
-  and app.ApplicationId = @client
+  and auth.ApplicationId = @client
   and auth.Status = @status;
 ";
             var controller = _callContext[_authorizationTable];
@@ -201,7 +199,7 @@ where auth.Subject = @subject
             string client,
             string status,
             string type,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -220,9 +218,8 @@ select
     auth.Subject,
     auth.Type
 from CK.tOpenIddictAuthorization auth
-join CK.tOpenIddictApplication app on app.ApplicationId = auth.ApplicationId
 where auth.Subject = @subject
-  and app.ApplicationId = @client
+  and auth.ApplicationId = @client
   and auth.Status = @status
   and auth.Type = @type;
 ";
@@ -249,7 +246,7 @@ where auth.Subject = @subject
             string status,
             string type,
             ImmutableArray<string> scopes,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -259,8 +256,14 @@ where auth.Subject = @subject
             Throw.CheckNotNullArgument( scopes );
 
             const string sql = @"
+with JsonScopes(requiredScope) as
+(
+    select requiredScope
+    from OpenJson(@scopes)
+    with (requiredScope nvarchar(max) '$')
+)
 select
-    auth.AuthorizationId,
+    distinct(auth.AuthorizationId),
     auth.ApplicationId,
     auth.CreationDate,
     auth.Properties,
@@ -269,14 +272,20 @@ select
     auth.Subject,
     auth.Type
 from CK.tOpenIddictAuthorization auth
+CROSS APPLY OpenJson(Scopes)
+    WITH (scope NVARCHAR(max) '$')
+join JsonScopes js on js.requiredScope = scope
 where auth.Subject = @subject
   and auth.ApplicationId = @client
   and auth.Status = @status
-  and auth.Type = @type
-  and auth.Scopes = @scopes;
+  and auth.Type = @type;
 ";
 
-            //TODO: scopes (json)
+            //TODO: scopes (json) => done. It could be done differently
+            // with the @scope parameter as default dapper mapping instead of json.
+            // used like this : In @scopes.
+            // Because dapper would do something like In (@scopes1, @scopes2)
+            // We still want to save as json, this could be done without custom dapper type
 
             var controller = _callContext[_authorizationTable];
 
@@ -287,7 +296,7 @@ where auth.Subject = @subject
                 cancellationToken: cancellationToken
             );
 
-            foreach( var authorization in authorizations.ToArray() )
+            foreach( var authorization in authorizations )
             {
                 yield return authorization;
             }
@@ -297,7 +306,7 @@ where auth.Subject = @subject
         public async IAsyncEnumerable<Authorization> FindByApplicationIdAsync
         (
             string identifier,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( identifier );
@@ -313,8 +322,7 @@ select
     auth.Subject,
     auth.Type
 from CK.tOpenIddictAuthorization auth
-join CK.tOpenIddictApplication app on app.ApplicationId = auth.ApplicationId
-where app.ApplicationId = @ApplicationId;
+where auth.ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_authorizationTable];
 
@@ -325,7 +333,7 @@ where app.ApplicationId = @ApplicationId;
                 cancellationToken: cancellationToken
             );
 
-            foreach( var authorization in authorizations.ToArray() )
+            foreach( var authorization in authorizations )
             {
                 yield return authorization;
             }
@@ -362,7 +370,7 @@ where auth.AuthorizationId = @AuthorizationId;
         public async IAsyncEnumerable<Authorization> FindBySubjectAsync
         (
             string subject,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
@@ -389,7 +397,7 @@ where auth.Subject = @subject;
                 cancellationToken: cancellationToken
             );
 
-            foreach( var authorization in authorizations.ToArray() )
+            foreach( var authorization in authorizations )
             {
                 yield return authorization;
             }
@@ -408,7 +416,7 @@ where auth.Subject = @subject;
         }
 
         /// <inheritdoc />
-        public async ValueTask<TResult?> GetAsync<TState, TResult>
+        public ValueTask<TResult?> GetAsync<TState, TResult>
         (
             Func<IQueryable<Authorization>, TState, IQueryable<TResult>> query,
             TState state,
@@ -488,9 +496,9 @@ where auth.Subject = @subject;
         }
 
         /// <inheritdoc />
-        public async ValueTask<Authorization> InstantiateAsync( CancellationToken cancellationToken )
+        public ValueTask<Authorization> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return new Authorization();
+            return ValueTask.FromResult( new Authorization() );
         }
 
         /// <inheritdoc />
@@ -498,7 +506,7 @@ where auth.Subject = @subject;
         (
             int? count,
             int? offset,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             offset ??= 0;
@@ -517,7 +525,7 @@ order by AuthorizationId
 offset @offset rows
 {countSql};
 ";
-//TODO: handle null values for count and offset
+
             var controller = _callContext[_authorizationTable];
 
             var authorizations = await controller.QueryAsync<Authorization>
@@ -527,7 +535,7 @@ offset @offset rows
                 cancellationToken: cancellationToken
             );
 
-            foreach( var authorization in authorizations.ToArray() )
+            foreach( var authorization in authorizations )
             {
                 yield return authorization;
             }
@@ -538,7 +546,7 @@ offset @offset rows
         (
             Func<IQueryable<Authorization>, TState, IQueryable<TResult>> query,
             TState state,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             if( query == null ) throw new ArgumentNullException( nameof( query ) );
@@ -563,20 +571,20 @@ from CK.tOpenIddictAuthorization
             );
 
             var authorizationsFiltered = query.Invoke( authorizations.AsQueryable(), state );
-            foreach( var authorization in authorizationsFiltered.ToArray() )
+            foreach( var authorization in authorizationsFiltered )
             {
                 yield return authorization;
             }
         }
 
         /// <inheritdoc />
-        public async ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
+        public ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public async ValueTask SetApplicationIdAsync
+        public ValueTask SetApplicationIdAsync
         (
             Authorization authorization,
             string? identifier,
@@ -586,10 +594,11 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.ApplicationId = identifier;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetCreationDateAsync
+        public ValueTask SetCreationDateAsync
         (
             Authorization authorization,
             DateTimeOffset? date,
@@ -599,10 +608,11 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.CreationDate = date;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPropertiesAsync
+        public ValueTask SetPropertiesAsync
         (
             Authorization authorization,
             ImmutableDictionary<string, JsonElement>? properties,
@@ -614,14 +624,15 @@ from CK.tOpenIddictAuthorization
             if( properties is null || properties.Any() is false )
             {
                 authorization.Properties.Clear();
-                return;
+                return ValueTask.CompletedTask;
             }
 
             authorization.Properties.AddRange( properties );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetScopesAsync
+        public ValueTask SetScopesAsync
         (
             Authorization authorization,
             ImmutableArray<string> scopes,
@@ -633,14 +644,15 @@ from CK.tOpenIddictAuthorization
             if( scopes == default || scopes.Any() is false )
             {
                 authorization.Properties.Clear();
-                return;
+                return ValueTask.CompletedTask;
             }
 
             authorization.Scopes.AddRange( scopes );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetStatusAsync
+        public ValueTask SetStatusAsync
         (
             Authorization authorization,
             string? status,
@@ -650,10 +662,11 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Status = status;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetSubjectAsync
+        public ValueTask SetSubjectAsync
         (
             Authorization authorization,
             string? subject,
@@ -663,15 +676,21 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Subject = subject;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetTypeAsync
-        ( Authorization authorization, string? type, CancellationToken cancellationToken )
+        public ValueTask SetTypeAsync
+        (
+            Authorization authorization,
+            string? type,
+            CancellationToken cancellationToken
+        )
         {
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Type = type;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />

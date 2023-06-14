@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -183,10 +184,9 @@ where ClientId = @ClientId;
         public async IAsyncEnumerable<Application> FindByPostLogoutRedirectUriAsync
         (
             string uri,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
-            throw new NotImplementedException( "Missing: Implement a sql json query on uri" );
             Throw.CheckNotNullOrWhiteSpaceArgument( uri );
 
             const string sql = @"
@@ -203,7 +203,7 @@ select ApplicationId,
        Requirements,
        Type
 from CK.tOpenIddictApplication
-where PostLogoutRedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
+where PostLogoutRedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 ";
 
             var controller = _callContext[_applicationTable];
@@ -215,8 +215,7 @@ where PostLogoutRedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
                 cancellationToken: cancellationToken
             );
 
-            // I'm not sure if there is any point to populate the IAsyncEnumerable directly from database.
-            foreach( var application in applications.ToArray() )
+            foreach( var application in applications )
             {
                 yield return application;
             }
@@ -226,7 +225,7 @@ where PostLogoutRedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         public async IAsyncEnumerable<Application> FindByRedirectUriAsync
         (
             string uri,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( uri );
@@ -245,9 +244,9 @@ select ApplicationId,
        Requirements,
        Type
 from CK.tOpenIddictApplication
-where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
+where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 ";
-            //TODO: Query json out of uris
+
             var controller = _callContext[_applicationTable];
 
             var applications = await controller.QueryAsync<Application>
@@ -257,7 +256,6 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
                 cancellationToken: cancellationToken
             );
 
-            // I'm not sure if there is any point to populate the IAsyncEnumerable directly from database.
             foreach( var application in applications )
             {
                 yield return application;
@@ -265,7 +263,7 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         }
 
         /// <inheritdoc />
-        public async ValueTask<TResult> GetAsync<TState, TResult>
+        public ValueTask<TResult?> GetAsync<TState, TResult>
         (
             Func<IQueryable<Application>, TState, IQueryable<TResult>> query,
             TState state,
@@ -277,7 +275,7 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetClientIdAsync
+        public ValueTask<string?> GetClientIdAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -285,11 +283,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.ClientId;
+            return ValueTask.FromResult( application.ClientId );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetClientSecretAsync
+        public ValueTask<string?> GetClientSecretAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -297,11 +295,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.ClientSecret;
+            return ValueTask.FromResult( application.ClientSecret );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetClientTypeAsync
+        public ValueTask<string?> GetClientTypeAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -309,11 +307,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.Type;
+            return ValueTask.FromResult( application.Type );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetConsentTypeAsync
+        public ValueTask<string?> GetConsentTypeAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -321,11 +319,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.ConsentType;
+            return ValueTask.FromResult( application.ConsentType );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetDisplayNameAsync
+        public ValueTask<string?> GetDisplayNameAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -333,11 +331,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.DisplayName;
+            return ValueTask.FromResult( application.DisplayName );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync
+        public ValueTask<ImmutableDictionary<CultureInfo, string>> GetDisplayNamesAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -345,11 +343,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.DisplayNames.ToImmutableDictionary();
+            return ValueTask.FromResult( application.DisplayNames.ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<string?> GetIdAsync
+        public ValueTask<string?> GetIdAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -357,11 +355,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.ApplicationId.ToString();
+            return ValueTask.FromResult( application.ApplicationId.ToString() )!;
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableArray<string>> GetPermissionsAsync
+        public ValueTask<ImmutableArray<string>> GetPermissionsAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -369,11 +367,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.Permissions.ToImmutableArray();
+            return ValueTask.FromResult( application.Permissions.ToImmutableArray() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync
+        public ValueTask<ImmutableArray<string>> GetPostLogoutRedirectUrisAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -381,11 +379,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.PostLogoutRedirectUris.Select( uri => uri.ToString() ).ToImmutableArray();
+            return ValueTask.FromResult( application.PostLogoutRedirectUris.Select( uri => uri.ToString() ).ToImmutableArray() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync
+        public ValueTask<ImmutableDictionary<string, JsonElement>> GetPropertiesAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -393,11 +391,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.Properties.ToImmutableDictionary();
+            return ValueTask.FromResult( application.Properties.ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableArray<string>> GetRedirectUrisAsync
+        public ValueTask<ImmutableArray<string>> GetRedirectUrisAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -405,11 +403,11 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.RedirectUris.Select( uri => uri.ToString() ).ToImmutableArray();
+            return ValueTask.FromResult( application.RedirectUris.Select( uri => uri.ToString() ).ToImmutableArray() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableArray<string>> GetRequirementsAsync
+        public ValueTask<ImmutableArray<string>> GetRequirementsAsync
         (
             Application application,
             CancellationToken cancellationToken
@@ -417,18 +415,18 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return application.Requirements.Select( uri => uri.ToString() ).ToImmutableArray();
+            return ValueTask.FromResult( application.Requirements.Select( uri => uri.ToString() ).ToImmutableArray() );
         }
 
         /// <inheritdoc />
-        public async ValueTask<Application> InstantiateAsync( CancellationToken cancellationToken )
+        public ValueTask<Application> InstantiateAsync( CancellationToken cancellationToken )
         {
             var application = new Application
             {
                 // ApplicationId = Guid.NewGuid(), //TODO: wrong ? I set it on Create SP.
             };
 
-            return application;
+            return ValueTask.FromResult( application );
         }
 
         /// <inheritdoc />
@@ -436,7 +434,7 @@ where RedirectUris like '%@uri%' collate Latin1_General_100_CI_AS;
         (
             int? count,
             int? offset,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             offset ??= 0;
@@ -470,7 +468,7 @@ offset @offset rows
                 cancellationToken: cancellationToken
             );
 
-            foreach( var application in applications.ToArray() )
+            foreach( var application in applications )
             {
                 yield return application;
             }
@@ -481,7 +479,7 @@ offset @offset rows
         (
             Func<IQueryable<Application>, TState, IQueryable<TResult>> query,
             TState state,
-            CancellationToken cancellationToken
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             if( query == null ) throw new ArgumentNullException( nameof( query ) );
@@ -510,14 +508,14 @@ from CK.tOpenIddictApplication
             );
 
             var applicationsFiltered = query.Invoke( applications.AsQueryable(), state );
-            foreach( var application in applicationsFiltered.ToArray() )
+            foreach( var application in applicationsFiltered )
             {
                 yield return application;
             }
         }
 
         /// <inheritdoc />
-        public async ValueTask SetClientIdAsync
+        public ValueTask SetClientIdAsync
         (
             Application application,
             string? identifier,
@@ -526,10 +524,11 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
             application.ClientId = identifier;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetClientSecretAsync
+        public ValueTask SetClientSecretAsync
         (
             Application application,
             string? secret,
@@ -538,10 +537,11 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
             application.ClientSecret = secret;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetClientTypeAsync
+        public ValueTask SetClientTypeAsync
         (
             Application application,
             string? type,
@@ -550,10 +550,11 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
             application.Type = type;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetConsentTypeAsync
+        public ValueTask SetConsentTypeAsync
         (
             Application application,
             string? type,
@@ -562,10 +563,11 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
             application.ConsentType = type;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetDisplayNameAsync
+        public ValueTask SetDisplayNameAsync
         (
             Application application,
             string? name,
@@ -575,10 +577,11 @@ from CK.tOpenIddictApplication
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
             application.DisplayName = name;
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetDisplayNamesAsync
+        public ValueTask SetDisplayNamesAsync
         (
             Application application,
             ImmutableDictionary<CultureInfo, string> names,
@@ -589,13 +592,14 @@ from CK.tOpenIddictApplication
 
             application.DisplayNames.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( names is null ) return;
+            if( names is null ) return ValueTask.CompletedTask;
 
             application.DisplayNames.AddRange( names );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPermissionsAsync
+        public ValueTask SetPermissionsAsync
         (
             Application application,
             ImmutableArray<string> permissions,
@@ -606,13 +610,14 @@ from CK.tOpenIddictApplication
 
             application.Permissions.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( permissions == null ) return;
+            if( permissions == null ) return ValueTask.CompletedTask;
 
             application.Permissions.AddRange( permissions );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPostLogoutRedirectUrisAsync
+        public ValueTask SetPostLogoutRedirectUrisAsync
         (
             Application application,
             ImmutableArray<string> uris,
@@ -623,13 +628,14 @@ from CK.tOpenIddictApplication
 
             application.PostLogoutRedirectUris.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( uris == null ) return;
+            if( uris == null ) return ValueTask.CompletedTask;
 
             application.PostLogoutRedirectUris.AddRange( uris.Select( u => new Uri( u ) ) );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetPropertiesAsync
+        public ValueTask SetPropertiesAsync
         (
             Application application,
             ImmutableDictionary<string, JsonElement> properties,
@@ -640,13 +646,14 @@ from CK.tOpenIddictApplication
 
             application.Properties.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( properties is null ) return;
+            if( properties is null ) return ValueTask.CompletedTask;
 
             application.Properties.AddRange( properties );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetRedirectUrisAsync
+        public ValueTask SetRedirectUrisAsync
         (
             Application application,
             ImmutableArray<string> uris,
@@ -656,13 +663,14 @@ from CK.tOpenIddictApplication
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
             application.RedirectUris.Clear();
-            if( uris == null ) return;
+            if( uris == null ) return ValueTask.CompletedTask;
 
             application.RedirectUris.AddRange( uris.Select( u => new Uri( u ) ) );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async ValueTask SetRequirementsAsync
+        public ValueTask SetRequirementsAsync
         (
             Application application,
             ImmutableArray<string> requirements,
@@ -673,9 +681,10 @@ from CK.tOpenIddictApplication
 
             application.Requirements.Clear();
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( requirements == null ) return;
+            if( requirements == null ) return ValueTask.CompletedTask;
 
             application.Requirements.AddRange( requirements );
+            return ValueTask.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -684,7 +693,7 @@ from CK.tOpenIddictApplication
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
             Throw.CheckNotNullArgument( application.ApplicationId );
 
-            var sql = @"
+            const string sql = @"
 update CK.tOpenIddictApplication
 set
     ClientId = @ClientId,

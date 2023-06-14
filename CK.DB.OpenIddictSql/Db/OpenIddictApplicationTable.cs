@@ -18,13 +18,13 @@ namespace CK.DB.OpenIddictSql.Db
             string clientSecret,
             string consentType,
             string displayName,
-            string displayNames = default,
-            string permissions = default,
-            string postLogoutRedirectUris = default,
-            string properties = default,
-            string redirectUris = default,
-            string requirements = default,
-            string type = default
+            string? displayNames = default,
+            string? permissions = default,
+            string? postLogoutRedirectUris = default,
+            string? properties = default,
+            string? redirectUris = default,
+            string? requirements = default,
+            string? type = default
         );
 
         [SqlProcedure( "sOpenIddictApplicationDestroy" )]
