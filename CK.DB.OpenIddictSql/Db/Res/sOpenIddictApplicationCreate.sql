@@ -2,6 +2,7 @@
 
 create procedure CK.sOpenIddictApplicationCreate(
     @ActorId int,
+    @ApplicationId uniqueidentifier,
     @ClientId nvarchar(255),
     @ClientSecret nvarchar(255),
     @ConsentType nvarchar(10),
@@ -12,15 +13,12 @@ create procedure CK.sOpenIddictApplicationCreate(
     @Properties nvarchar(max),
     @RedirectUris nvarchar(max),
     @Requirements nvarchar(max),
-    @Type nvarchar(12),
-    @ApplicationIdResult uniqueidentifier output
+    @Type nvarchar(12)
 )
 as
 begin
     if @ActorId <= 0 throw 50000, 'Security.AnonymousNotAllowed', 1;
     --[beginsp]
-
-    select @ApplicationIdResult = NewId();
 
     --<PreCreate revert />
 
@@ -41,7 +39,7 @@ begin
      )
     values
     (
-        @ApplicationIdResult,
+        @ApplicationId,
         @ClientId,
         @ClientSecret,
         @ConsentType,

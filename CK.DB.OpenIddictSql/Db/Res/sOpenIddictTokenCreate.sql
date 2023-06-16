@@ -3,6 +3,7 @@
 create procedure CK.sOpenIddictTokenCreate
 (
     @ActorId int,
+    @TokenId uniqueidentifier,
     @ApplicationId uniqueidentifier,
     @AuthorizationId uniqueidentifier,
     @CreationDate datetime2(2),--todo: creationdate
@@ -13,15 +14,12 @@ create procedure CK.sOpenIddictTokenCreate
     @ReferenceId uniqueidentifier,
     @Status nvarchar (8),
     @Subject nvarchar (256),
-    @Type nvarchar (22),
-    @TokenIdResult uniqueidentifier output
+    @Type nvarchar (22)
 )
 as
 begin
     if @ActorId <= 0 throw 50000, 'Security.AnonymousNotAllowed', 1;
     --[beginsp]
-
-    select @TokenIdResult = NewId();
 
     --<PreCreate revert />
 
@@ -42,7 +40,7 @@ begin
     )
     values
     (
-        @TokenIdResult,
+        @TokenId,
         @ApplicationId,
         @AuthorizationId,
         @CreationDate,

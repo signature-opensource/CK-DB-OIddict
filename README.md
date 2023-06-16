@@ -63,7 +63,6 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 
 ## TODO
 
-- Stores identifiers are set by database, set them on instantiation.
 - Replace dapper type handling by targeting entities (Application, Token...) instead of built in types (Dictionary<...>)
   to avoid clashes.
 - What about primary identity ? UserId is int, not passed through the claims.
@@ -71,5 +70,4 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 - Rewrite dates handling. A workaround is used right now for authorization expiration. The rest is wrong.
 - Add consent form example to the default server.
 - Map claims
-- Implement missing / incomplete stores => For example, handle multiple scopes. Mainly, be able to query json. => This is in progress, but kind of working in a way.
-- Replace '%@uri%' with concat('%', @uri, '%')
+- Make most of classes internal

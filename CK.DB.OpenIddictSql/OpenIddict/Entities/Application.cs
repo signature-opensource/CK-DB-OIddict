@@ -9,7 +9,7 @@ namespace CK.DB.OpenIddictSql.Entities
 {
     public class Application : OpenIddictApplicationDescriptor
     {
-        public Guid ApplicationId { get; set; }
+        public Guid ApplicationId { get; init; }
 
         public new HashSet<string> Permissions
         {

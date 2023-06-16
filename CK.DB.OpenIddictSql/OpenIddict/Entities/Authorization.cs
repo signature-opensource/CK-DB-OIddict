@@ -8,7 +8,7 @@ namespace CK.DB.OpenIddictSql.Entities
 {
     public class Authorization : OpenIddictAuthorizationDescriptor
     {
-        public Guid AuthorizationId { get; set; }
+        public Guid AuthorizationId { get; init; }
 
         public new Dictionary<string, JsonElement> Properties
         {

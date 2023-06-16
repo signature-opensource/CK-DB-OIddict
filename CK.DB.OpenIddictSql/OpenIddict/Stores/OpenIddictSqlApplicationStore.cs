@@ -80,15 +80,18 @@ from CK.tOpenIddictApplication
         public async ValueTask CreateAsync( Application application, CancellationToken cancellationToken )
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
+            if( application.ApplicationId == default )
+                throw new ArgumentException( nameof( application.ApplicationId ) );
             Throw.CheckNotNullOrEmptyArgument( application.ClientId );
             Throw.CheckNotNullOrEmptyArgument( application.ClientSecret );
             Throw.CheckNotNullOrEmptyArgument( application.ConsentType );
             Throw.CheckNotNullOrEmptyArgument( application.DisplayName );
 
-            application.ApplicationId = await _applicationTable.CreateAsync
+            await _applicationTable.CreateAsync
             (
                 _callContext,
                 _actorId,
+                application.ApplicationId,
                 application.ClientId,
                 application.ClientSecret,
                 application.ConsentType,
@@ -423,7 +426,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             var application = new Application
             {
-                // ApplicationId = Guid.NewGuid(), //TODO: wrong ? I set it on Create SP.
+                ApplicationId = Guid.NewGuid(),
             };
 
             return ValueTask.FromResult( application );

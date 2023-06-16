@@ -10,10 +10,11 @@ namespace CK.DB.OpenIddictSql.Db
     public abstract class OpenIddictApplicationTable : SqlTable
     {
         [SqlProcedure( "sOpenIddictApplicationCreate" )]
-        public abstract Task<Guid> CreateAsync
+        public abstract Task CreateAsync
         (
             ISqlCallContext c,
             int actorId,
+            Guid applicationId,
             string clientId,
             string clientSecret,
             string consentType,

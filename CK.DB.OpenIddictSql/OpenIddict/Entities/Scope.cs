@@ -9,7 +9,7 @@ namespace CK.DB.OpenIddictSql.Entities
 {
     public class Scope : OpenIddictScopeDescriptor
     {
-        public Guid ScopeId { get; set; }
+        public Guid ScopeId { get; init; }
 
         public string? ScopeName
         {

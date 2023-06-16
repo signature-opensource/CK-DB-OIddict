@@ -49,12 +49,14 @@ namespace CK.DB.OpenIddictSql.Stores
         public async ValueTask CreateAsync( Scope scope, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( scope );
+            Throw.CheckNotNullArgument( scope.ScopeId );
             Throw.CheckNotNullArgument( scope.ScopeName );
 
-            scope.ScopeId = await _scopeTable.CreateAsync
+            await _scopeTable.CreateAsync
             (
                 _callContext,
                 _actorId,
+                scope.ScopeId,
                 scope.Description,
                 ToJson( scope.Descriptions ),
                 scope.DisplayName,

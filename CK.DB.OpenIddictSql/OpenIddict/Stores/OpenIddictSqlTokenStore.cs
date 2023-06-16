@@ -73,6 +73,7 @@ from CK.tOpenIddictToken
         public async ValueTask CreateAsync( Token token, CancellationToken cancellationToken )
         {
             Throw.CheckNotNullArgument( token );
+            Throw.CheckNotNullArgument( token.TokenId );
             Throw.CheckNotNullArgument( token.ApplicationId );
             Throw.CheckNotNullArgument( token.AuthorizationId );
             Throw.CheckNotNullArgument( token.CreationDate );
@@ -81,10 +82,11 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token.Subject );
             Throw.CheckNotNullArgument( token.Type );
 
-            token.TokenId = await _tokenTable.CreateAsync
+            await _tokenTable.CreateAsync
             (
                 _callContext,
                 _actorId,
+                token.TokenId,
                 Guid.Parse( token.ApplicationId ),
                 Guid.Parse( token.AuthorizationId ),
                 token.CreationDate.Value.UtcDateTime, //todo: date
@@ -395,7 +397,8 @@ where t.ReferenceId = @ReferenceId
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<Token> FindBySubjectAsync( string subject, [EnumeratorCancellation] CancellationToken cancellationToken )
+        public async IAsyncEnumerable<Token> FindBySubjectAsync
+        ( string subject, [EnumeratorCancellation] CancellationToken cancellationToken )
         {
             Throw.CheckNotNullOrWhiteSpaceArgument( subject );
 
@@ -546,11 +549,12 @@ where t.Subject = @subject
         /// <inheritdoc />
         public ValueTask<Token> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return ValueTask.FromResult( new Token() );
+            return ValueTask.FromResult( new Token { TokenId = Guid.NewGuid() } );
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<Token> ListAsync( int? count, int? offset, [EnumeratorCancellation] CancellationToken cancellationToken )
+        public async IAsyncEnumerable<Token> ListAsync
+        ( int? count, int? offset, [EnumeratorCancellation] CancellationToken cancellationToken )
         {
             offset ??= 0;
             var countSql = count.HasValue ? "fetch next @count rows only" : string.Empty;

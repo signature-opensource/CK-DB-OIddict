@@ -74,16 +74,18 @@ from CK.tOpenIddictAuthorization
         public async ValueTask CreateAsync( Authorization authorization, CancellationToken cancellationToken )
         {
             if( authorization == null ) throw new ArgumentNullException( nameof( authorization ) );
+            Throw.CheckNotNullArgument( authorization.AuthorizationId );
             Throw.CheckNotNullArgument( authorization.CreationDate );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.ApplicationId );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Status );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Subject );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Type );
 
-            authorization.AuthorizationId = await _authorizationTable.CreateAsync
+            await _authorizationTable.CreateAsync
             (
                 _callContext,
                 _actorId,
+                authorization.AuthorizationId,
                 Guid.Parse( authorization.ApplicationId ),
                 authorization.CreationDate.Value.UtcDateTime,
                 ToJson( authorization.Properties ),
@@ -498,7 +500,7 @@ where auth.Subject = @subject;
         /// <inheritdoc />
         public ValueTask<Authorization> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return ValueTask.FromResult( new Authorization() );
+            return ValueTask.FromResult( new Authorization { AuthorizationId = Guid.NewGuid() } );
         }
 
         /// <inheritdoc />

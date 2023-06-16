@@ -8,7 +8,7 @@ namespace CK.DB.OpenIddictSql.Entities
 {
     public class Token : OpenIddictTokenDescriptor
     {
-        public Guid TokenId { get; set; }
+        public Guid TokenId { get; init; }
 
         public new Dictionary<string, JsonElement> Properties
         {
