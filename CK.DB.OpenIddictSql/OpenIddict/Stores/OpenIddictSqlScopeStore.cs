@@ -10,6 +10,7 @@ using CK.Core;
 using CK.DB.OpenIddictSql.Db;
 using CK.DB.OpenIddictSql.Entities;
 using CK.SqlServer;
+using Dapper;
 using OpenIddict.Abstractions;
 using static CK.DB.OpenIddictSql.Dapper.JsonTypeConverter;
 
@@ -52,18 +53,47 @@ namespace CK.DB.OpenIddictSql.Stores
             Throw.CheckNotNullArgument( scope.ScopeId );
             Throw.CheckNotNullArgument( scope.ScopeName );
 
-            await _scopeTable.CreateAsync
+            const string sql = @"
+insert into CK.tOpenIddictScope
+(
+    ScopeId,
+    Description,
+    Descriptions,
+    DisplayName,
+    DisplayNames,
+    ScopeName,
+    Properties,
+    Resources
+)
+values
+(
+    @ScopeId,
+    @Description,
+    @Descriptions,
+    @DisplayName,
+    @DisplayNames,
+    @ScopeName,
+    @Properties,
+    @Resources
+);
+";
+
+            var controller = _callContext[_scopeTable];
+
+            await controller.ExecuteAsync
             (
-                _callContext,
-                _actorId,
-                scope.ScopeId,
-                scope.Description,
-                ToJson( scope.Descriptions ),
-                scope.DisplayName,
-                ToJson( scope.DisplayNames ),
-                scope.ScopeName,
-                ToJson( scope.Properties ),
-                ToJson( scope.Resources )
+                sql,
+                new
+                {
+                    scope.ScopeId,
+                    scope.Description,
+                    Descriptions = ToJson( scope.Descriptions ),
+                    scope.DisplayName,
+                    DisplayNames = ToJson( scope.DisplayNames ),
+                    scope.ScopeName,
+                    Properties = ToJson( scope.Properties ),
+                    Resources = ToJson( scope.Resources ),
+                }
             );
         }
 
@@ -72,7 +102,13 @@ namespace CK.DB.OpenIddictSql.Stores
         {
             Throw.CheckNotNullArgument( scope );
 
-            await _scopeTable.DestroyAsync( _callContext, _actorId, scope.ScopeId );
+            const string sql = @"
+delete from CK.tOpenIddictScope
+where ScopeId = @ScopeId;";
+
+            var controller = _callContext[_scopeTable];
+
+            await controller.ExecuteAsync( sql, new { scope.ScopeId } );
         }
 
         /// <inheritdoc />
@@ -88,7 +124,8 @@ namespace CK.DB.OpenIddictSql.Stores
         }
 
         /// <inheritdoc />
-        public IAsyncEnumerable<Scope> FindByNamesAsync( ImmutableArray<string> names, CancellationToken cancellationToken )
+        public IAsyncEnumerable<Scope> FindByNamesAsync
+        ( ImmutableArray<string> names, CancellationToken cancellationToken )
         {
             throw new NotImplementedException();
         }
@@ -101,7 +138,11 @@ namespace CK.DB.OpenIddictSql.Stores
 
         /// <inheritdoc />
         public async ValueTask<TResult> GetAsync<TState, TResult>
-        ( Func<IQueryable<Scope>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken )
+        (
+            Func<IQueryable<Scope>, TState, IQueryable<TResult>> query,
+            TState state,
+            CancellationToken cancellationToken
+        )
         {
             throw new NotImplementedException();
         }
@@ -161,7 +202,8 @@ namespace CK.DB.OpenIddictSql.Stores
         }
 
         /// <inheritdoc />
-        public async ValueTask<ImmutableArray<string>> GetResourcesAsync( Scope scope, CancellationToken cancellationToken )
+        public async ValueTask<ImmutableArray<string>> GetResourcesAsync
+        ( Scope scope, CancellationToken cancellationToken )
         {
             throw new NotImplementedException();
         }
@@ -180,13 +222,18 @@ namespace CK.DB.OpenIddictSql.Stores
 
         /// <inheritdoc />
         public IAsyncEnumerable<TResult> ListAsync<TState, TResult>
-        ( Func<IQueryable<Scope>, TState, IQueryable<TResult>> query, TState state, CancellationToken cancellationToken )
+        (
+            Func<IQueryable<Scope>, TState, IQueryable<TResult>> query,
+            TState state,
+            CancellationToken cancellationToken
+        )
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public async ValueTask SetDescriptionAsync( Scope scope, string description, CancellationToken cancellationToken )
+        public async ValueTask SetDescriptionAsync
+        ( Scope scope, string description, CancellationToken cancellationToken )
         {
             throw new NotImplementedException();
         }

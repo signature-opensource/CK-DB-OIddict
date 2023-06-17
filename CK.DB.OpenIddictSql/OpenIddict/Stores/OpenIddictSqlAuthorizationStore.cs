@@ -81,18 +81,47 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Subject );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Type );
 
-            await _authorizationTable.CreateAsync
+            const string sql = @"
+insert into CK.tOpenIddictAuthorization
+(
+    AuthorizationId,
+    ApplicationId,
+    CreationDate,
+    Properties,
+    Scopes,
+    Status,
+    Subject,
+    Type
+)
+values
+(
+    @AuthorizationId,
+    @ApplicationId,
+    @CreationDate,
+    @Properties,
+    @Scopes,
+    @Status,
+    @Subject,
+    @Type
+)
+";
+
+            var controller = _callContext[_authorizationTable];
+
+            await controller.ExecuteAsync
             (
-                _callContext,
-                _actorId,
-                authorization.AuthorizationId,
-                Guid.Parse( authorization.ApplicationId ),
-                authorization.CreationDate.Value.UtcDateTime,
-                ToJson( authorization.Properties ),
-                ToJson( authorization.Scopes ),
-                authorization.Status,
-                authorization.Subject,
-                authorization.Type
+                sql,
+                new
+                {
+                    authorization.AuthorizationId,
+                    ApplicationId = Guid.Parse( authorization.ApplicationId ),
+                    CreationDate = authorization.CreationDate.Value.UtcDateTime,
+                    Properties = ToJson( authorization.Properties ),
+                    Scopes = ToJson( authorization.Scopes ),
+                    authorization.Status,
+                    authorization.Subject,
+                    authorization.Type,
+                }
             );
         }
 
@@ -101,12 +130,11 @@ from CK.tOpenIddictAuthorization
         {
             if( authorization == null ) throw new ArgumentNullException( nameof( authorization ) );
 
-            await _authorizationTable.DestroyAsync
-            (
-                _callContext,
-                _actorId,
-                authorization.AuthorizationId
-            );
+            const string sql = @"    delete from CK.tOpenIddictAuthorization
+    where AuthorizationId = @AuthorizationId;
+";
+            var controller = _callContext[_authorizationTable];
+            await controller.ExecuteAsync( sql, new { authorization.AuthorizationId } );
         }
 
         /// <inheritdoc />

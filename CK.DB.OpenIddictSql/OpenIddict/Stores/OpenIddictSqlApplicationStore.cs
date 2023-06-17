@@ -87,22 +87,59 @@ from CK.tOpenIddictApplication
             Throw.CheckNotNullOrEmptyArgument( application.ConsentType );
             Throw.CheckNotNullOrEmptyArgument( application.DisplayName );
 
-            await _applicationTable.CreateAsync
+            const string sql = @"
+insert into CK.tOpenIddictApplication
+(
+    ApplicationId,
+    ClientId,
+    ClientSecret,
+    ConsentType,
+    DisplayName,
+    DisplayNames,
+    Permissions,
+    PostLogoutRedirectUris,
+    Properties,
+    RedirectUris,
+    Requirements,
+    Type
+)
+values
+(
+    @ApplicationId,
+    @ClientId,
+    @ClientSecret,
+    @ConsentType,
+    @DisplayName,
+    @DisplayNames,
+    @Permissions,
+    @PostLogoutRedirectUris,
+    @Properties,
+    @RedirectUris,
+    @Requirements,
+    @Type
+);
+";
+
+            var controller = _callContext[_applicationTable];
+
+            await controller.ExecuteAsync
             (
-                _callContext,
-                _actorId,
-                application.ApplicationId,
-                application.ClientId,
-                application.ClientSecret,
-                application.ConsentType,
-                application.DisplayName,
-                ToJson( application.DisplayNames ),
-                ToJson( application.Permissions ),
-                ToJson( application.PostLogoutRedirectUris ),
-                ToJson( application.Properties ),
-                ToJson( application.RedirectUris ),
-                ToJson( application.Requirements ),
-                application.Type
+                sql,
+                new
+                {
+                    application.ApplicationId,
+                    application.ClientId,
+                    application.ClientSecret,
+                    application.ConsentType,
+                    application.DisplayName,
+                    DisplayNames = ToJson( application.DisplayNames ),
+                    Permissions = ToJson( application.Permissions ),
+                    PostLogoutRedirectUris = ToJson( application.PostLogoutRedirectUris ),
+                    Properties = ToJson( application.Properties ),
+                    RedirectUris = ToJson( application.RedirectUris ),
+                    Requirements = ToJson( application.Requirements ),
+                    application.Type,
+                }
             );
         }
 
@@ -111,12 +148,14 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            await _applicationTable.DestroyAsync
-            (
-                _callContext,
-                _actorId,
-                application.ApplicationId
-            );
+            var controller = _callContext[_applicationTable];
+
+            const string sql = @"
+delete from CK.tOpenIddictApplication
+where ApplicationId = @ApplicationId;
+";
+
+            await controller.ExecuteAsync( sql, new { application.ApplicationId } );
         }
 
         /// <inheritdoc />
@@ -382,7 +421,10 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.PostLogoutRedirectUris.Select( uri => uri.ToString() ).ToImmutableArray() );
+            return ValueTask.FromResult
+            (
+                application.PostLogoutRedirectUris.Select( uri => uri.ToString() ).ToImmutableArray()
+            );
         }
 
         /// <inheritdoc />

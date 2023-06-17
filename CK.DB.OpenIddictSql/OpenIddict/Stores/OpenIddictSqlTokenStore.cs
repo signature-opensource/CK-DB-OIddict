@@ -82,22 +82,59 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token.Subject );
             Throw.CheckNotNullArgument( token.Type );
 
-            await _tokenTable.CreateAsync
+            const string sql = @"
+insert into CK.tOpenIddictToken
+(
+    TokenId,
+    ApplicationId,
+    AuthorizationId,
+    CreationDate,
+    ExpirationDate,
+    Payload,
+    Properties,
+    RedemptionDate,
+    ReferenceId,
+    Status,
+    Subject,
+    Type
+)
+values
+(
+    @TokenId,
+    @ApplicationId,
+    @AuthorizationId,
+    @CreationDate,
+    @ExpirationDate,
+    @Payload,
+    @Properties,
+    @RedemptionDate,
+    @ReferenceId,
+    @Status,
+    @Subject,
+    @Type
+);
+";
+
+            var controller = _callContext[_tokenTable];
+
+            await controller.ExecuteAsync
             (
-                _callContext,
-                _actorId,
-                token.TokenId,
-                Guid.Parse( token.ApplicationId ),
-                Guid.Parse( token.AuthorizationId ),
-                token.CreationDate.Value.UtcDateTime, //todo: date
-                token.ExpirationDate.Value.UtcDateTime,
-                token.Payload,
-                ToJson( token.Properties ),
-                token.RedemptionDate?.UtcDateTime,
-                token.ReferenceId != null ? Guid.Parse( token.ReferenceId ) : null,
-                token.Status,
-                token.Subject,
-                token.Type
+                sql,
+                new
+                {
+                    token.TokenId,
+                    ApplicationId = Guid.Parse( token.ApplicationId ),
+                    AuthorizationId = Guid.Parse( token.AuthorizationId ),
+                    CreationDate = token.CreationDate.Value.UtcDateTime, //todo: date
+                    ExpirationDate = token.ExpirationDate.Value.UtcDateTime,
+                    token.Payload,
+                    Properties = ToJson( token.Properties ),
+                    RedemptionDate = token.RedemptionDate?.UtcDateTime,
+                    ReferenceId = (Guid?)(token.ReferenceId != null ? Guid.Parse( token.ReferenceId ) : null),
+                    token.Status,
+                    token.Subject,
+                    token.Type,
+                }
             );
         }
 
@@ -106,7 +143,13 @@ from CK.tOpenIddictToken
         {
             Throw.CheckNotNullArgument( token );
 
-            await _tokenTable.DestroyAsync( _callContext, _actorId, token.TokenId );
+            var controller = _callContext[_tokenTable];
+
+            var sql = @"
+delete from CK.tOpenIddictToken
+where TokenId = @TokenId;
+";
+            await controller.ExecuteAsync( sql, new { token.TokenId } );
         }
 
         /// <inheritdoc />
