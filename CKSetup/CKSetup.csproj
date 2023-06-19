@@ -24,7 +24,11 @@
     </Target>
 
     <ItemGroup>
-      <ProjectReference Include="..\CK.DB.OpenIddictSql.DefaultServer.App\CK.DB.OpenIddictSql.DefaultServer.App.csproj" />
+      <ProjectReference Include="..\CK.DB.OIddict.DefaultServer.App\CK.DB.OIddict.DefaultServer.App.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="WorkingDir\CKSetup.CK.DB.OIddict\" />
     </ItemGroup>
 
 </Project>

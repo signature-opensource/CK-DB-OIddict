@@ -1,19 +1,19 @@
-# CK-DB-OpenIddict
+# CK-DB-OIddict
 
-| ![logo](ck-db-openiddictsql_alpha.png) | [![Licence](https://img.shields.io/github/license/signature-opensource/CK-DB-OpenIddictSql.svg)](https://github.com/signature-opensource/CK-DB-OpenIddictSql/blob/master/LICENSE) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/signature-opensource/CK-DB-OpenIddictSql?svg=true)](https://ci.appveyor.com/project/Signature-OpenSource/ck-db-OpenIddictSql) |
+| ![logo](ck-db-OIddict_alpha.png) | [![Licence](https://img.shields.io/github/license/signature-opensource/CK-DB-OIddict.svg)](https://github.com/signature-opensource/CK-DB-OIddict/blob/master/LICENSE) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/signature-opensource/CK-DB-OIddict?svg=true)](https://ci.appveyor.com/project/Signature-OpenSource/ck-db-OIddict) |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 2 libraries built on top of [OpenIddict](https://github.com/openiddict).
 
 | Name                       | Nuget                                                                                                                                    | Description                                                     |
 |----------------------------|------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| CK.DB.OpenIddictSql        | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.OpenIddictSql.svg)](https://www.nuget.org/packages/CK.DB.OpenIddictSql/)               | Stores implementation                                           |
-| CK.DB.AspNet.OpenIddictSql | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.AspNet.OpenIddictSql.svg)](https://www.nuget.org/packages/CK.DB.AspNet.OpenIddictSql/) | AspNet code flow implementation (depend on CK.DB.OpenIddictSql) |
+| CK.DB.OIddict        | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.OIddict.svg)](https://www.nuget.org/packages/CK.DB.OIddict/)               | Stores implementation                                           |
+| CK.DB.AspNet.OIddict | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.AspNet.OIddict.svg)](https://www.nuget.org/packages/CK.DB.AspNet.OIddict/) | AspNet code flow implementation (depend on CK.DB.OIddict) |
 
 Start with the AspNet package to quickly try it out of the box.
 
 It is recommended to give a try and follow the **Getting started** section right below.
-If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** section or directly [CK.DB.AspNet.OpenIddictSql/README.md](CK.DB.AspNet.OpenIddictSql/README.md).
+If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** section or directly [CK.DB.AspNet.OIddict/README.md](CK.DB.AspNet.OIddict/README.md).
 
 ## Getting started
 
@@ -35,7 +35,7 @@ services.AddOpenIddictAspWebFrontAuth
 );
 ```
 
-Then you need an actual front end, check out the sample [in our example server](CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth) that you can copy paste.
+Then you need an actual front end, check out the sample [in our example server](CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
 The `loginPath` is mapped to `"/"`;
 
 ### Quick test
@@ -47,16 +47,16 @@ or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com) for example.
 
 ### Create an administration panel with Cris
 
-Using [Cris](CK.DB.OpenIddictSql/Cris), you can build a front end to manage applications or else to create the best
+Using [Cris](CK.DB.OIddict/Cris), you can build a front end to manage applications or else to create the best
 oidc provider !
 
 ## About
 
-- [CK.DB.AspNet.OpenIddictSql](CK.DB.AspNet.OpenIddictSql) => Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
-- [CK.DB.OpenIddictSql](CK.DB.OpenIddictSql) => Implement Sql Stores and entities on OpenIddict Core.
-- [CK.DB.OpenIddictSql.DefaultServer.App](CK.DB.OpenIddictSql.DefaultServer.App) => An example on how to use the packages with WebFrontAuth.
+- [CK.DB.AspNet.OIddict](CK.DB.AspNet.OIddict) => Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
+- [CK.DB.OIddict](CK.DB.OIddict) => Implement Sql Stores and entities on OpenIddict Core.
+- [CK.DB.OIddict.DefaultServer.App](CK.DB.OIddict.DefaultServer.App) => An example on how to use the packages with WebFrontAuth.
 - [SLog.AuthTest](SLog.AuthTest) => A simple oidc client bound to the DefaultServer.
-- [CK.DB.OpenIddictSql.DefaultClient](CK.DB.OpenIddictSql.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
+- [CK.DB.OIddict.DefaultClient](CK.DB.OIddict.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
   not.
 
 About unit tests => I don't think that much relevant. It would take a load of time for no much reason.

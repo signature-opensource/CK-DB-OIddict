@@ -248,13 +248,13 @@ CodeCakeBuilder/[Rr]eleases/
 CKSetup/WorkingDir/*
 
 # Yarn
-CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/cache/
-CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.pnp.*
-CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/*
-!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/plugins
-!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/releases
-!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/sdks
-!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/patches
-!CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/.yarn/versions
+CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/cache/
+CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.pnp.*
+CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/*
+!CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/plugins
+!CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/releases
+!CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/sdks
+!CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/patches
+!CK.DB.OIddict.DefaultServer.App/WebFrontAuth/.yarn/versions
 
-/CK.DB.OpenIddictSql.DefaultServer.App/WebFrontAuth/WFATester.version.ts
+/CK.DB.OIddict.DefaultServer.App/WebFrontAuth/WFATester.version.ts
