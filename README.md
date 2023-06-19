@@ -1,7 +1,7 @@
 # CK-DB-OIddict
 
-| ![logo](ck-db-OIddict_alpha.png) | [![Licence](https://img.shields.io/github/license/signature-opensource/CK-DB-OIddict.svg)](https://github.com/signature-opensource/CK-DB-OIddict/blob/master/LICENSE) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/signature-opensource/CK-DB-OIddict?svg=true)](https://ci.appveyor.com/project/Signature-OpenSource/ck-db-OIddict) |
-|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ![logo](ck-db-oiddict_alpha.png) | [![Licence](https://img.shields.io/github/license/signature-opensource/CK-DB-OIddict.svg)](https://github.com/signature-opensource/CK-DB-OIddict/blob/master/LICENSE) | [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/signature-opensource/CK-DB-OIddict?svg=true)](https://ci.appveyor.com/project/Signature-OpenSource/ck-db-OIddict) |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 2 libraries built on top of [OpenIddict](https://github.com/openiddict).
 
