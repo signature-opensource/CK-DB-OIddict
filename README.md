@@ -35,14 +35,14 @@ services.AddOpenIddictAspWebFrontAuth
 );
 ```
 
-Then you need an actual front end, check out the sample [in our example server](CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
+Then you need an actual front end, check out the sample [in our example server](Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
 The `loginPath` is mapped to `"/"`;
 
 ### Quick test
 
 Check out [OpenIddict Sample](https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Server/Worker.cs) to create an application.
 
-Go ahead and try the flow. You can use the [client example](SLog.AuthTest)
+Go ahead and try the flow. You can use the [client example](Samples/SLog.AuthTest)
 or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com) for example.
 
 ### Create an administration panel with Cris
@@ -54,9 +54,9 @@ oidc provider !
 
 - [CK.DB.AspNet.OIddict](CK.DB.AspNet.OIddict) => Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
 - [CK.DB.OIddict](CK.DB.OIddict) => Implement Sql Stores and entities on OpenIddict Core.
-- [CK.DB.OIddict.DefaultServer.App](CK.DB.OIddict.DefaultServer.App) => An example on how to use the packages with WebFrontAuth.
-- [SLog.AuthTest](SLog.AuthTest) => A simple oidc client bound to the DefaultServer.
-- [CK.DB.OIddict.DefaultClient](CK.DB.OIddict.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
+- [Samples/CK.DB.OIddict.DefaultServer.App](Samples/CK.DB.OIddict.DefaultServer.App) => An example on how to use the packages with WebFrontAuth.
+- [SLog.AuthTest](Samples/SLog.AuthTest) => A simple oidc client bound to the DefaultServer.
+- [CK.DB.OIddict.DefaultClient](Samples/CK.DB.OIddict.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
   not.
 
 About unit tests => I don't think that much relevant. It would take a load of time for no much reason.
