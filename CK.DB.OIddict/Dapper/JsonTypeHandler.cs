@@ -18,7 +18,7 @@ namespace CK.DB.OIddict.Dapper
         {
             if( value is not string json ) throw new NotImplementedException();
 
-            return JsonConvert.DeserializeObject<T>( json, _jsonSettings );
+            return JsonConvert.DeserializeObject<T>( json, _jsonSettings )!;
         }
     }
 }
