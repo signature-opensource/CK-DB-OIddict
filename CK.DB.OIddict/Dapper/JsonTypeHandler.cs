@@ -11,7 +11,8 @@ namespace CK.DB.OIddict.Dapper
 
         public override void SetValue( IDbDataParameter parameter, T value )
         {
-            parameter.Value = JsonConvert.SerializeObject( value, _jsonSettings );
+            throw new Exception( "This code should not be reached." );
+// parameter.Value = JsonConvert.SerializeObject( value, _jsonSettings );
         }
 
         public override T Parse( object value )

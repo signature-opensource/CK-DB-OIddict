@@ -184,7 +184,11 @@ where ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_applicationTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Application>( sql, new { ApplicationId = identifier } );
+            return await controller.QuerySingleOrDefaultAsync<Application>
+            (
+                sql,
+                new { ApplicationId = Guid.Parse( identifier ) }
+            );
         }
 
         /// <inheritdoc />
@@ -302,6 +306,8 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
                 yield return application;
             }
         }
+
+        #region Get
 
         /// <inheritdoc />
         public ValueTask<TResult?> GetAsync<TState, TResult>
@@ -471,6 +477,8 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
             );
         }
 
+        #endregion
+
         /// <inheritdoc />
         public ValueTask<Application> InstantiateAsync( CancellationToken cancellationToken )
         {
@@ -566,6 +574,8 @@ from CK.tOpenIddictApplication
                 yield return application;
             }
         }
+
+        #region Set
 
         /// <inheritdoc />
         public ValueTask SetClientIdAsync
@@ -731,6 +741,8 @@ from CK.tOpenIddictApplication
             return ValueTask.CompletedTask;
         }
 
+        #endregion
+
         /// <inheritdoc />
         public async ValueTask UpdateAsync( Application application, CancellationToken cancellationToken )
         {
@@ -764,12 +776,12 @@ where ApplicationId = @ApplicationId
                     application.ClientSecret,
                     application.ConsentType,
                     application.DisplayName,
-                    application.DisplayNames,
-                    application.Permissions,
-                    application.PostLogoutRedirectUris,
-                    application.Properties,
-                    application.RedirectUris,
-                    application.Requirements,
+                    DisplayNames = ToJson( application.DisplayNames ),
+                    Permissions = ToJson( application.Permissions ),
+                    PostLogoutRedirectUris = ToJson( application.PostLogoutRedirectUris ),
+                    Properties = ToJson( application.Properties ),
+                    RedirectUris = ToJson( application.RedirectUris ),
+                    Requirements = ToJson( application.Requirements ),
                     ApplicationType = application.Type,
                     application.ApplicationId,
                 }

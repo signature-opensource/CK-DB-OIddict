@@ -168,7 +168,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<Authorization>
             (
                 sql,
-                new { subject, client },
+                new { subject, client = Guid.Parse( client ) },
                 cancellationToken: cancellationToken
             );
 
@@ -211,7 +211,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<Authorization>
             (
                 sql,
-                new { subject, client, status },
+                new { subject, client = Guid.Parse( client ), status },
                 cancellationToken: cancellationToken
             );
 
@@ -257,7 +257,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<Authorization>
             (
                 sql,
-                new { subject, client, status, type },
+                new { subject, client = Guid.Parse( client ), status, type },
                 cancellationToken: cancellationToken
             );
 
@@ -321,7 +321,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<Authorization>
             (
                 sql,
-                new { subject, client, status, type, scopes },
+                new { subject, client = Guid.Parse( client ), status, type, scopes = ToJson( scopes.ToHashSet() ) },
                 cancellationToken: cancellationToken
             );
 
@@ -358,7 +358,7 @@ where auth.ApplicationId = @ApplicationId;
             var authorizations = await controller.QueryAsync<Authorization>
             (
                 sql,
-                new { ApplicationId = identifier },
+                new { ApplicationId = Guid.Parse( identifier ) },
                 cancellationToken: cancellationToken
             );
 
@@ -391,7 +391,7 @@ where auth.AuthorizationId = @AuthorizationId;
             return await controller.QuerySingleOrDefaultAsync<Authorization>
             (
                 sql,
-                new { AuthorizationId = identifier }
+                new { AuthorizationId = Guid.Parse( identifier ) }
             );
         }
 
@@ -431,6 +431,8 @@ where auth.Subject = @subject;
                 yield return authorization;
             }
         }
+
+        #region Get
 
         /// <inheritdoc />
         public ValueTask<string?> GetApplicationIdAsync
@@ -526,6 +528,8 @@ where auth.Subject = @subject;
             return ValueTask.FromResult( authorization.Type );
         }
 
+        #endregion
+
         /// <inheritdoc />
         public ValueTask<Authorization> InstantiateAsync( CancellationToken cancellationToken )
         {
@@ -613,6 +617,8 @@ from CK.tOpenIddictAuthorization
         {
             throw new NotImplementedException();
         }
+
+        #region Set
 
         /// <inheritdoc />
         public ValueTask SetApplicationIdAsync
@@ -719,6 +725,8 @@ from CK.tOpenIddictAuthorization
             return ValueTask.CompletedTask;
         }
 
+        #endregion
+
         /// <inheritdoc />
         public async ValueTask UpdateAsync( Authorization authorization, CancellationToken cancellationToken )
         {
@@ -746,8 +754,8 @@ where AuthorizationId = @AuthorizationId
                 {
                     authorization.ApplicationId,
                     authorization.CreationDate,
-                    authorization.Properties,
-                    authorization.Scopes,
+                    Properties = ToJson( authorization.Properties ),
+                    Scopes = ToJson( authorization.Scopes ),
                     authorization.Status,
                     authorization.Subject,
                     AuthorizationType = authorization.Type,

@@ -21,7 +21,6 @@ namespace CK.DB.OIddict.Stores
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictScopeTable _scopeTable;
-        private const int _actorId = 1; // OpenIddict is hardcoded admin
 
         public OIddictScopeStore
         (

@@ -187,7 +187,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<Token>
             (
                 sql,
-                new { subject, client },
+                new { subject, client = Guid.Parse( client ) },
                 cancellationToken: cancellationToken
             );
 
@@ -234,7 +234,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<Token>
             (
                 sql,
-                new { subject, client, status },
+                new { subject, client = Guid.Parse( client ), status },
                 cancellationToken: cancellationToken
             );
 
@@ -284,7 +284,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<Token>
             (
                 sql,
-                new { subject, client, status, type },
+                new { subject, client = Guid.Parse( client ), status, type },
                 cancellationToken: cancellationToken
             );
 
@@ -325,7 +325,7 @@ where t.ApplicationId = @ApplicationId
             var tokens = await controller.QueryAsync<Token>
             (
                 sql,
-                new { ApplicationId = identifier },
+                new { ApplicationId = Guid.Parse( identifier ) },
                 cancellationToken: cancellationToken
             );
 
@@ -366,7 +366,7 @@ where t.AuthorizationId = @AuthorizationId
             var tokens = await controller.QueryAsync<Token>
             (
                 sql,
-                new { AuthorizationId = identifier },
+                new { AuthorizationId = Guid.Parse( identifier ) },
                 cancellationToken: cancellationToken
             );
 
@@ -403,7 +403,7 @@ where t.TokenId = @TokenId
             return await controller.QuerySingleOrDefaultAsync<Token>
             (
                 sql,
-                new { TokenId = identifier }
+                new { TokenId = Guid.Parse( identifier ) }
             );
         }
 
@@ -475,6 +475,8 @@ where t.Subject = @subject
                 yield return token;
             }
         }
+
+        #region Get
 
         /// <inheritdoc />
         public ValueTask<string?> GetApplicationIdAsync( Token token, CancellationToken cancellationToken )
@@ -588,6 +590,8 @@ where t.Subject = @subject
             return ValueTask.FromResult( token.Type );
         }
 
+        #endregion
+
         /// <inheritdoc />
         public ValueTask<Token> InstantiateAsync( CancellationToken cancellationToken )
         {
@@ -680,6 +684,8 @@ from CK.tOpenIddictToken
         {
             throw new NotImplementedException();
         }
+
+        #region Set
 
         /// <inheritdoc />
         public ValueTask SetApplicationIdAsync( Token token, string? identifier, CancellationToken cancellationToken )
@@ -816,6 +822,8 @@ from CK.tOpenIddictToken
             return ValueTask.CompletedTask;
         }
 
+        #endregion
+
         /// <inheritdoc />
         public async ValueTask UpdateAsync( Token token, CancellationToken cancellationToken )
         {
@@ -849,7 +857,7 @@ where TokenId = @TokenId
                     token.CreationDate,
                     token.ExpirationDate,
                     token.Payload,
-                    token.Properties,
+                    Properties = ToJson( token.Properties ),
                     token.RedemptionDate,
                     token.ReferenceId,
                     token.Status,
