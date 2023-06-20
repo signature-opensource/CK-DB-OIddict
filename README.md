@@ -71,3 +71,4 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 - Add consent form example to the default server.
 - Map claims
 - Make most of classes internal
+- Simplify README.md by showing up directly the startup with OpenIddict config exposed.

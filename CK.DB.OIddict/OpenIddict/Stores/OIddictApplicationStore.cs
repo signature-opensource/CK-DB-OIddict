@@ -385,7 +385,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.DisplayNames.ToImmutableDictionary() );
+            return ValueTask.FromResult( (application.DisplayNames ?? new()).ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
@@ -409,7 +409,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.Permissions.ToImmutableArray() );
+            return ValueTask.FromResult( (application.Permissions ?? new()).ToImmutableArray() );
         }
 
         /// <inheritdoc />
@@ -423,7 +423,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 
             return ValueTask.FromResult
             (
-                application.PostLogoutRedirectUris.Select( uri => uri.ToString() ).ToImmutableArray()
+                (application.PostLogoutRedirectUris ?? new()).Select( uri => uri.ToString() ).ToImmutableArray()
             );
         }
 
@@ -436,7 +436,10 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.Properties.ToImmutableDictionary() );
+            return ValueTask.FromResult
+            (
+                (application.Properties ?? new()).ToImmutableDictionary()
+            );
         }
 
         /// <inheritdoc />
@@ -448,7 +451,10 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.RedirectUris.Select( uri => uri.ToString() ).ToImmutableArray() );
+            return ValueTask.FromResult
+            (
+                (application.RedirectUris ?? new()).Select( uri => uri.ToString() ).ToImmutableArray()
+            );
         }
 
         /// <inheritdoc />
@@ -460,7 +466,10 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            return ValueTask.FromResult( application.Requirements.Select( uri => uri.ToString() ).ToImmutableArray() );
+            return ValueTask.FromResult
+            (
+                (application.Requirements ?? new()).Select( uri => uri.ToString() ).ToImmutableArray()
+            );
         }
 
         /// <inheritdoc />
@@ -568,7 +577,9 @@ from CK.tOpenIddictApplication
         )
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
+
             application.ClientId = identifier;
+
             return ValueTask.CompletedTask;
         }
 
@@ -581,7 +592,9 @@ from CK.tOpenIddictApplication
         )
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
+
             application.ClientSecret = secret;
+
             return ValueTask.CompletedTask;
         }
 
@@ -594,7 +607,9 @@ from CK.tOpenIddictApplication
         )
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
+
             application.Type = type;
+
             return ValueTask.CompletedTask;
         }
 
@@ -607,7 +622,9 @@ from CK.tOpenIddictApplication
         )
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
+
             application.ConsentType = type;
+
             return ValueTask.CompletedTask;
         }
 
@@ -622,6 +639,7 @@ from CK.tOpenIddictApplication
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
             application.DisplayName = name;
+
             return ValueTask.CompletedTask;
         }
 
@@ -635,11 +653,8 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.DisplayNames.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( names is null ) return ValueTask.CompletedTask;
+            application.DisplayNames = names.ToDictionary( pair => pair.Key, pair => pair.Value );
 
-            application.DisplayNames.AddRange( names );
             return ValueTask.CompletedTask;
         }
 
@@ -653,11 +668,8 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.Permissions.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( permissions == null ) return ValueTask.CompletedTask;
+            application.Permissions = permissions.ToHashSet();
 
-            application.Permissions.AddRange( permissions );
             return ValueTask.CompletedTask;
         }
 
@@ -671,11 +683,8 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.PostLogoutRedirectUris.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( uris == null ) return ValueTask.CompletedTask;
+            application.PostLogoutRedirectUris = uris.Select( u => new Uri( u ) ).ToHashSet();
 
-            application.PostLogoutRedirectUris.AddRange( uris.Select( u => new Uri( u ) ) );
             return ValueTask.CompletedTask;
         }
 
@@ -689,11 +698,8 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.Properties.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( properties is null ) return ValueTask.CompletedTask;
+            application.Properties = properties.ToDictionary( pair => pair.Key, pair => pair.Value );
 
-            application.Properties.AddRange( properties );
             return ValueTask.CompletedTask;
         }
 
@@ -707,10 +713,8 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.RedirectUris.Clear();
-            if( uris == null ) return ValueTask.CompletedTask;
+            application.RedirectUris = uris.Select( u => new Uri( u ) ).ToHashSet();
 
-            application.RedirectUris.AddRange( uris.Select( u => new Uri( u ) ) );
             return ValueTask.CompletedTask;
         }
 
@@ -724,11 +728,7 @@ from CK.tOpenIddictApplication
         {
             if( application == null ) throw new ArgumentNullException( nameof( application ) );
 
-            application.Requirements.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if( requirements == null ) return ValueTask.CompletedTask;
-
-            application.Requirements.AddRange( requirements );
+            application.Requirements = requirements.ToHashSet();
             return ValueTask.CompletedTask;
         }
 

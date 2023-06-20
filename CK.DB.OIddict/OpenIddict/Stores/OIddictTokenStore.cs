@@ -546,7 +546,7 @@ where t.Subject = @subject
         {
             Throw.CheckNotNullArgument( token );
 
-            return ValueTask.FromResult( token.Properties.ToImmutableDictionary() );
+            return ValueTask.FromResult( (token.Properties ?? new()).ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
@@ -688,6 +688,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.ApplicationId = identifier;
+
             return ValueTask.CompletedTask;
         }
 
@@ -702,6 +703,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.AuthorizationId = identifier;
+
             return ValueTask.CompletedTask;
         }
 
@@ -716,6 +718,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.CreationDate = date;
+
             return ValueTask.CompletedTask;
         }
 
@@ -730,6 +733,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.ExpirationDate = date;
+
             return ValueTask.CompletedTask;
         }
 
@@ -739,6 +743,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.Payload = payload;
+
             return ValueTask.CompletedTask;
         }
 
@@ -752,11 +757,8 @@ from CK.tOpenIddictToken
         {
             Throw.CheckNotNullArgument( token );
 
-            token.Properties.Clear();
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if( properties is null ) return ValueTask.CompletedTask;
+            token.Properties = properties.ToDictionary( pair => pair.Key, pair => pair.Value );
 
-            token.Properties.AddRange( properties );
             return ValueTask.CompletedTask;
         }
 
@@ -771,6 +773,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.RedemptionDate = date;
+
             return ValueTask.CompletedTask;
         }
 
@@ -780,6 +783,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.ReferenceId = identifier;
+
             return ValueTask.CompletedTask;
         }
 
@@ -789,6 +793,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.Status = status;
+
             return ValueTask.CompletedTask;
         }
 
@@ -798,6 +803,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.Subject = subject;
+
             return ValueTask.CompletedTask;
         }
 
@@ -807,6 +813,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token );
 
             token.Type = type;
+
             return ValueTask.CompletedTask;
         }
 

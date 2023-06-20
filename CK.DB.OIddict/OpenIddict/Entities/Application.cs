@@ -2,73 +2,69 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using CK.Core;
-using OpenIddict.Abstractions;
 
 namespace CK.DB.OIddict.Entities
 {
-    public class Application : OpenIddictApplicationDescriptor
+    public class Application
     {
         public Guid ApplicationId { get; init; }
 
-        public new HashSet<string> Permissions
-        {
-            get => base.Permissions;
-            set
-            {
-                base.Permissions.Clear();
-                base.Permissions.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the client identifier associated with the application.
+        /// </summary>
+        public string? ClientId { get; set; }
 
-        public new Dictionary<CultureInfo, string> DisplayNames
-        {
-            get => base.DisplayNames;
-            set
-            {
-                base.DisplayNames.Clear();
-                base.DisplayNames.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the client secret associated with the application.
+        /// Note: depending on the application manager used when creating it,
+        /// this property may be hashed or encrypted for security reasons.
+        /// </summary>
+        public string? ClientSecret { get; set; }
 
-        public new HashSet<Uri> PostLogoutRedirectUris
-        {
-            get => base.PostLogoutRedirectUris;
-            set
-            {
-                base.PostLogoutRedirectUris.Clear();
-                base.PostLogoutRedirectUris.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the consent type associated with the application.
+        /// </summary>
+        public string? ConsentType { get; set; }
 
-        public new Dictionary<string, JsonElement> Properties
-        {
-            get => base.Properties;
-            set
-            {
-                base.Properties.Clear();
-                base.Properties.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the display name associated with the application.
+        /// </summary>
+        public string? DisplayName { get; set; }
 
-        public new HashSet<Uri> RedirectUris
-        {
-            get => base.RedirectUris;
-            set
-            {
-                base.RedirectUris.Clear();
-                base.RedirectUris.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets the localized display names associated with the application.
+        /// </summary>
+        public Dictionary<CultureInfo, string>? DisplayNames { get; set; }
 
-        public new HashSet<string> Requirements
-        {
-            get => base.Requirements;
-            set
-            {
-                base.Requirements.Clear();
-                base.Requirements.AddRange( value );
-            }
-        }
+        /// <summary>Gets the permissions associated with the application.</summary>
+        public HashSet<string>? Permissions { get; set; }
+
+        /// <summary>
+        /// Gets the post-logout redirect URIs associated with the application.
+        /// </summary>
+
+        public HashSet<Uri>? PostLogoutRedirectUris { get; set; }
+
+        /// <summary>
+        /// Gets the additional properties associated with the application.
+        /// </summary>
+
+        public Dictionary<string, JsonElement>? Properties { get; set; }
+
+        /// <summary>
+        /// Gets the redirect URIs associated with the application.
+        /// </summary>
+
+        public HashSet<Uri>? RedirectUris { get; set; }
+
+        /// <summary>
+        /// Gets the requirements associated with the application.
+        /// </summary>
+        public HashSet<string>? Requirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application type associated with the application.
+        /// </summary>
+        public string? Type { get; set; }
     }
 }

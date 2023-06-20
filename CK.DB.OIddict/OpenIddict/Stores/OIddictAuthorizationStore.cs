@@ -474,7 +474,9 @@ where auth.Subject = @subject;
             Throw.CheckNotNullArgument( authorization );
 
             return ValueTask.FromResult
-            ( authorization.AuthorizationId != default ? authorization.AuthorizationId.ToString() : null );
+            (
+                authorization.AuthorizationId != default ? authorization.AuthorizationId.ToString() : null
+            );
         }
 
         /// <inheritdoc />
@@ -486,7 +488,7 @@ where auth.Subject = @subject;
         {
             Throw.CheckNotNullArgument( authorization );
 
-            return ValueTask.FromResult( authorization.Properties.ToImmutableDictionary() );
+            return ValueTask.FromResult( (authorization.Properties ?? new()).ToImmutableDictionary() );
         }
 
         /// <inheritdoc />
@@ -498,7 +500,7 @@ where auth.Subject = @subject;
         {
             Throw.CheckNotNullArgument( authorization );
 
-            return ValueTask.FromResult( authorization.Scopes.ToImmutableArray() );
+            return ValueTask.FromResult( (authorization.Scopes ?? new()).ToImmutableArray() );
         }
 
         /// <inheritdoc />
@@ -624,6 +626,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.ApplicationId = identifier;
+
             return ValueTask.CompletedTask;
         }
 
@@ -638,6 +641,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.CreationDate = date;
+
             return ValueTask.CompletedTask;
         }
 
@@ -651,13 +655,8 @@ from CK.tOpenIddictAuthorization
         {
             Throw.CheckNotNullArgument( authorization );
 
-            if( properties is null || properties.Any() is false )
-            {
-                authorization.Properties.Clear();
-                return ValueTask.CompletedTask;
-            }
+            authorization.Properties = properties?.ToDictionary( pair => pair.Key, pair => pair.Value );
 
-            authorization.Properties.AddRange( properties );
             return ValueTask.CompletedTask;
         }
 
@@ -671,13 +670,8 @@ from CK.tOpenIddictAuthorization
         {
             Throw.CheckNotNullArgument( authorization );
 
-            if( scopes == default || scopes.Any() is false )
-            {
-                authorization.Properties.Clear();
-                return ValueTask.CompletedTask;
-            }
+            authorization.Scopes = scopes.ToHashSet();
 
-            authorization.Scopes.AddRange( scopes );
             return ValueTask.CompletedTask;
         }
 
@@ -692,6 +686,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Status = status;
+
             return ValueTask.CompletedTask;
         }
 
@@ -706,6 +701,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Subject = subject;
+
             return ValueTask.CompletedTask;
         }
 
@@ -720,6 +716,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization );
 
             authorization.Type = type;
+
             return ValueTask.CompletedTask;
         }
 

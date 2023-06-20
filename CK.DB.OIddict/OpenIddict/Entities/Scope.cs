@@ -2,59 +2,44 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using CK.Core;
-using OpenIddict.Abstractions;
 
 namespace CK.DB.OIddict.Entities
 {
-    public class Scope : OpenIddictScopeDescriptor
+    public class Scope
     {
         public Guid ScopeId { get; init; }
 
-        public string? ScopeName
-        {
-            get => Name;
-            set => Name = value;
-        }
+        /// <summary>
+        /// Gets or sets the description associated with the scope.
+        /// </summary>
+        public string? Description { get; set; }
 
-        public new Dictionary<CultureInfo, string> Descriptions
-        {
-            get => base.Descriptions;
-            set
-            {
-                base.Descriptions.Clear();
-                base.Descriptions.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets the localized descriptions associated with the scope.
+        /// </summary>
+        public Dictionary<CultureInfo, string>? Descriptions { get; set; }
 
-        public new Dictionary<CultureInfo, string> DisplayNames
-        {
-            get => base.DisplayNames;
-            set
-            {
-                base.DisplayNames.Clear();
-                base.DisplayNames.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the display name associated with the scope.
+        /// </summary>
+        public string? DisplayName { get; set; }
 
-        public new Dictionary<string, JsonElement> Properties
-        {
-            get => base.Properties;
-            set
-            {
-                base.Properties.Clear();
-                base.Properties.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets the localized display names associated with the scope.
+        /// </summary>
+        public Dictionary<CultureInfo, string>? DisplayNames { get; set; }
 
-        public new HashSet<string> Resources
-        {
-            get => base.Resources;
-            set
-            {
-                base.Resources.Clear();
-                base.Resources.AddRange( value );
-            }
-        }
+        /// <summary>
+        /// Gets or sets the unique name associated with the scope.
+        /// </summary>
+        public string? ScopeName { get; set; }
+
+        /// <summary>
+        /// Gets the additional properties associated with the scope.
+        /// </summary>
+        public Dictionary<string, JsonElement>? Properties { get; set; }
+
+        /// <summary>Gets the resources associated with the scope.</summary>
+        public HashSet<string>? Resources { get; set; }
     }
 }

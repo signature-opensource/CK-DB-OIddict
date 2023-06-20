@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using CK.Core;
-using CK.SqlServer;
+﻿using CK.Core;
 
 namespace CK.DB.OIddict.Db
 {
