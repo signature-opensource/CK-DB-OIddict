@@ -11,7 +11,7 @@ namespace CK.DB.OIddict.Entities
         /// <summary>
         /// Gets or sets the application identifier associated with the authorization.
         /// </summary>
-        public string? ApplicationId { get; set; }
+        public Guid? ApplicationId { get; set; }
 
         /// <summary>
         /// Gets or sets the creation date associated with the authorization.

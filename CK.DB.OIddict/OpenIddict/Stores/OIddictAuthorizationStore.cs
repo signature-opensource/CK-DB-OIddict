@@ -20,7 +20,6 @@ namespace CK.DB.OIddict.Stores
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictAuthorizationTable _authorizationTable;
-        private const int _actorId = 1; // OpenIddict is hardcoded admin
 
         public OIddictAuthorizationStore
         (
@@ -76,7 +75,7 @@ from CK.tOpenIddictAuthorization
             if( authorization == null ) throw new ArgumentNullException( nameof( authorization ) );
             Throw.CheckNotNullArgument( authorization.AuthorizationId );
             Throw.CheckNotNullArgument( authorization.CreationDate );
-            Throw.CheckNotNullOrWhiteSpaceArgument( authorization.ApplicationId );
+            Throw.CheckNotNullArgument( authorization.ApplicationId );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Status );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Subject );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Type );
@@ -114,7 +113,7 @@ values
                 new
                 {
                     authorization.AuthorizationId,
-                    ApplicationId = Guid.Parse( authorization.ApplicationId ),
+                    authorization.ApplicationId,
                     CreationDate = authorization.CreationDate.Value.UtcDateTime,
                     Properties = ToJson( authorization.Properties ),
                     Scopes = ToJson( authorization.Scopes ),
@@ -442,7 +441,7 @@ where auth.Subject = @subject;
         {
             Throw.CheckNotNullArgument( authorization );
 
-            return ValueTask.FromResult( authorization.ApplicationId );
+            return ValueTask.FromResult( authorization.ApplicationId.ToString() );
         }
 
         /// <inheritdoc />
@@ -625,7 +624,7 @@ from CK.tOpenIddictAuthorization
         {
             Throw.CheckNotNullArgument( authorization );
 
-            authorization.ApplicationId = identifier;
+            authorization.ApplicationId = identifier is null ? null : Guid.Parse( identifier );
 
             return ValueTask.CompletedTask;
         }

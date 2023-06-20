@@ -20,7 +20,6 @@ namespace CK.DB.OIddict.Stores
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictTokenTable _tokenTable;
-        private const int _actorId = 1; // OpenIddict is hardcoded admin
 
         public OIddictTokenStore( ISqlCallContext callContext, OpenIddictTokenTable tokenTable )
         {
@@ -123,8 +122,8 @@ values
                 new
                 {
                     token.TokenId,
-                    ApplicationId = Guid.Parse( token.ApplicationId ),
-                    AuthorizationId = Guid.Parse( token.AuthorizationId ),
+                    token.ApplicationId,
+                    token.AuthorizationId,
                     CreationDate = token.CreationDate.Value.UtcDateTime, //todo: date
                     ExpirationDate = token.ExpirationDate.Value.UtcDateTime,
                     token.Payload,
@@ -482,7 +481,7 @@ where t.Subject = @subject
         {
             Throw.CheckNotNullArgument( token );
 
-            return ValueTask.FromResult( token.ApplicationId );
+            return ValueTask.FromResult( token.ApplicationId.ToString() );
         }
 
         /// <inheritdoc />
@@ -501,7 +500,7 @@ where t.Subject = @subject
         {
             Throw.CheckNotNullArgument( token );
 
-            return ValueTask.FromResult( token.AuthorizationId );
+            return ValueTask.FromResult( token.AuthorizationId.ToString() );
         }
 
 
@@ -687,7 +686,7 @@ from CK.tOpenIddictToken
         {
             Throw.CheckNotNullArgument( token );
 
-            token.ApplicationId = identifier;
+            token.ApplicationId = identifier is null ? null : Guid.Parse( identifier );
 
             return ValueTask.CompletedTask;
         }
@@ -702,7 +701,7 @@ from CK.tOpenIddictToken
         {
             Throw.CheckNotNullArgument( token );
 
-            token.AuthorizationId = identifier;
+            token.AuthorizationId = identifier is null ? null : Guid.Parse( identifier );
 
             return ValueTask.CompletedTask;
         }
