@@ -45,8 +45,6 @@ namespace CK.DB.OIddict
             SqlMapper.AddTypeHandler( new JsonTypeHandler<HashSet<Uri>>() );
             SqlMapper.AddTypeHandler( new JsonTypeHandler<Dictionary<string, JsonElement>>() );
             SqlMapper.AddTypeHandler( new JsonTypeHandler<ImmutableArray<string>>() );
-            SqlMapper.AddTypeHandler( new GuidToStringTypeHandler() );
-            SqlMapper.AddTypeHandler( new StringToGuidTypeHandler() );
 
             return builder;
         }
