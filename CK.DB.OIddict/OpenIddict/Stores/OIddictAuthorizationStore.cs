@@ -13,6 +13,7 @@ using CK.SqlServer;
 using Dapper;
 using OpenIddict.Abstractions;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
+using static CK.DB.OIddict.Entities.Authorization;
 
 namespace CK.DB.OIddict.Stores
 {
@@ -165,7 +166,7 @@ where auth.Subject = @subject
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ) },
@@ -174,7 +175,7 @@ where auth.Subject = @subject
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -208,7 +209,7 @@ where auth.Subject = @subject
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ), status },
@@ -217,7 +218,7 @@ where auth.Subject = @subject
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -254,7 +255,7 @@ where auth.Subject = @subject
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ), status, type },
@@ -263,7 +264,7 @@ where auth.Subject = @subject
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -318,7 +319,7 @@ where auth.Subject = @subject
 
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ), status, type, scopes = ToJson( scopes.ToHashSet() ) },
@@ -327,7 +328,7 @@ where auth.Subject = @subject
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -355,7 +356,7 @@ where auth.ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { ApplicationId = Guid.Parse( identifier ) },
@@ -364,7 +365,7 @@ where auth.ApplicationId = @ApplicationId;
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -388,11 +389,12 @@ where auth.AuthorizationId = @AuthorizationId;
 ";
             var controller = _callContext[_authorizationTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Authorization>
+            var result = await controller.QuerySingleOrDefaultAsync<AuthorizationDbModel>
             (
                 sql,
                 new { AuthorizationId = Guid.Parse( identifier ) }
             );
+            return FromDbModel( result );
         }
 
         /// <inheritdoc />
@@ -419,7 +421,7 @@ where auth.Subject = @subject;
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { subject },
@@ -428,7 +430,7 @@ where auth.Subject = @subject;
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -563,7 +565,7 @@ offset @offset rows
 
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 new { count, offset },
@@ -572,7 +574,7 @@ offset @offset rows
 
             foreach( var authorization in authorizations )
             {
-                yield return authorization;
+                yield return FromDbModel( authorization )!;
             }
         }
 
@@ -599,13 +601,13 @@ from CK.tOpenIddictAuthorization
 ";
             var controller = _callContext[_authorizationTable];
 
-            var authorizations = await controller.QueryAsync<Authorization>
+            var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
                 cancellationToken: cancellationToken
             );
 
-            var authorizationsFiltered = query.Invoke( authorizations.AsQueryable(), state );
+            var authorizationsFiltered = query.Invoke( authorizations.Select( FromDbModel ).AsQueryable()!, state );
             foreach( var authorization in authorizationsFiltered )
             {
                 yield return authorization;
@@ -733,7 +735,7 @@ from CK.tOpenIddictAuthorization
             if( authorization == null ) throw new ArgumentNullException( nameof( authorization ) );
             Throw.CheckNotNullArgument( authorization.AuthorizationId );
 
-            var sql = @"
+            const string sql = @"
 update CK.tOpenIddictAuthorization
 set
     ApplicationId = @ApplicationId,

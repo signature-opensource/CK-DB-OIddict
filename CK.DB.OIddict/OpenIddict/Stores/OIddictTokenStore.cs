@@ -13,6 +13,7 @@ using CK.SqlServer;
 using Dapper;
 using OpenIddict.Abstractions;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
+using static CK.DB.OIddict.Entities.Token;
 
 namespace CK.DB.OIddict.Stores
 {
@@ -184,7 +185,7 @@ where t.Subject = @subject
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ) },
@@ -193,7 +194,7 @@ where t.Subject = @subject
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -231,7 +232,7 @@ where t.Subject = @subject
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ), status },
@@ -240,7 +241,7 @@ where t.Subject = @subject
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -281,7 +282,7 @@ where t.Subject = @subject
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { subject, client = Guid.Parse( client ), status, type },
@@ -290,7 +291,7 @@ where t.Subject = @subject
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -322,7 +323,7 @@ where t.ApplicationId = @ApplicationId
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { ApplicationId = Guid.Parse( identifier ) },
@@ -331,7 +332,7 @@ where t.ApplicationId = @ApplicationId
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -363,7 +364,7 @@ where t.AuthorizationId = @AuthorizationId
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { AuthorizationId = Guid.Parse( identifier ) },
@@ -372,7 +373,7 @@ where t.AuthorizationId = @AuthorizationId
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -400,11 +401,12 @@ where t.TokenId = @TokenId
 ";
             var controller = _callContext[_tokenTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Token>
+            var result = await controller.QuerySingleOrDefaultAsync<TokenDbModel>
             (
                 sql,
                 new { TokenId = Guid.Parse( identifier ) }
             );
+            return FromDbModel( result );
         }
 
         /// <inheritdoc />
@@ -431,11 +433,12 @@ where t.ReferenceId = @ReferenceId
 ";
             var controller = _callContext[_tokenTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Token?>
+            var result = await controller.QuerySingleOrDefaultAsync<TokenDbModel>
             (
                 sql,
                 new { ReferenceId = identifier }
             );
+            return FromDbModel( result );
         }
 
         /// <inheritdoc />
@@ -463,7 +466,7 @@ where t.Subject = @subject
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { subject },
@@ -472,7 +475,7 @@ where t.Subject = @subject
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -626,7 +629,7 @@ offset @offset rows
 
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 new { count, offset },
@@ -635,7 +638,7 @@ offset @offset rows
 
             foreach( var token in tokens )
             {
-                yield return token;
+                yield return FromDbModel( token )!;
             }
         }
 
@@ -666,13 +669,13 @@ from CK.tOpenIddictToken
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>
+            var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
                 cancellationToken: cancellationToken
             );
 
-            var tokensFiltered = query.Invoke( tokens.AsQueryable(), state );
+            var tokensFiltered = query.Invoke( tokens.Select( FromDbModel ).AsQueryable()!, state );
             foreach( var token in tokensFiltered )
             {
                 yield return token;

@@ -14,6 +14,7 @@ using CK.SqlServer;
 using Dapper;
 using OpenIddict.Abstractions;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
+using static CK.DB.OIddict.Entities.Application;
 
 namespace CK.DB.OIddict.Stores
 {
@@ -184,11 +185,13 @@ where ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_applicationTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Application>
+            var result = await controller.QuerySingleOrDefaultAsync<ApplicationDbModel>
             (
                 sql,
                 new { ApplicationId = Guid.Parse( identifier ) }
             );
+
+            return FromDbModel( result );
         }
 
         /// <inheritdoc />
@@ -218,11 +221,13 @@ where ClientId = @ClientId;
 ";
             var controller = _callContext[_applicationTable];
 
-            return await controller.QuerySingleOrDefaultAsync<Application>
+            var result = await controller.QuerySingleOrDefaultAsync<ApplicationDbModel>
             (
                 sql,
                 param: new { ClientId = identifier }
             );
+
+            return FromDbModel( result );
         }
 
         /// <inheritdoc />
@@ -253,7 +258,7 @@ where PostLogoutRedirectUris like concat('%', @uri, '%') collate Latin1_General_
 
             var controller = _callContext[_applicationTable];
 
-            var applications = await controller.QueryAsync<Application>
+            var applications = await controller.QueryAsync<ApplicationDbModel>
             (
                 sql,
                 new { uri },
@@ -262,7 +267,7 @@ where PostLogoutRedirectUris like concat('%', @uri, '%') collate Latin1_General_
 
             foreach( var application in applications )
             {
-                yield return application;
+                yield return FromDbModel( application )!;
             }
         }
 
@@ -294,7 +299,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 
             var controller = _callContext[_applicationTable];
 
-            var applications = await controller.QueryAsync<Application>
+            var applications = await controller.QueryAsync<ApplicationDbModel>
             (
                 sql,
                 new { uri },
@@ -303,7 +308,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 
             foreach( var application in applications )
             {
-                yield return application;
+                yield return FromDbModel( application )!;
             }
         }
 
@@ -522,7 +527,7 @@ offset @offset rows
 
             var controller = _callContext[_applicationTable];
 
-            var applications = await controller.QueryAsync<Application>
+            var applications = await controller.QueryAsync<ApplicationDbModel>
             (
                 sql,
                 new { count, offset },
@@ -531,7 +536,7 @@ offset @offset rows
 
             foreach( var application in applications )
             {
-                yield return application;
+                yield return FromDbModel( application )!;
             }
         }
 
@@ -562,13 +567,13 @@ from CK.tOpenIddictApplication
 ";
             var controller = _callContext[_applicationTable];
 
-            var applications = await controller.QueryAsync<Application>
+            var applications = await controller.QueryAsync<ApplicationDbModel>
             (
                 sql,
                 cancellationToken: cancellationToken
             );
 
-            var applicationsFiltered = query.Invoke( applications.AsQueryable(), state );
+            var applicationsFiltered = query.Invoke( applications.Select( FromDbModel ).AsQueryable()!, state );
             foreach( var application in applicationsFiltered )
             {
                 yield return application;

@@ -39,13 +39,6 @@ namespace CK.DB.OIddict
             builder.AddScopeStore<OIddictScopeStore>();
             builder.AddTokenStore<OIddictTokenStore>();
 
-            //TODO: Handle entities types to prevent conflicts.
-            SqlMapper.AddTypeHandler( new JsonTypeHandler<Dictionary<CultureInfo, string>>() );
-            SqlMapper.AddTypeHandler( new JsonTypeHandler<HashSet<string>>() );
-            SqlMapper.AddTypeHandler( new JsonTypeHandler<HashSet<Uri>>() );
-            SqlMapper.AddTypeHandler( new JsonTypeHandler<Dictionary<string, JsonElement>>() );
-            SqlMapper.AddTypeHandler( new JsonTypeHandler<ImmutableArray<string>>() );
-
             return builder;
         }
     }

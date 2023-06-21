@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 
 namespace CK.DB.OIddict.Entities
 {
@@ -41,5 +42,36 @@ namespace CK.DB.OIddict.Entities
 
         /// <summary>Gets the resources associated with the scope.</summary>
         public HashSet<string>? Resources { get; set; }
+
+        public static Scope? FromDbModel( ScopeDbModel? dbModel )
+        {
+            if( dbModel is null ) return null;
+
+            var scope = new Scope
+            {
+                ScopeId = dbModel.ScopeId,
+                Description = dbModel.Description,
+                Descriptions = FromJson<Dictionary<CultureInfo, string>>( dbModel.Descriptions ),
+                DisplayName = dbModel.DisplayName,
+                DisplayNames = FromJson<Dictionary<CultureInfo, string>>( dbModel.DisplayNames ),
+                ScopeName = dbModel.ScopeName,
+                Properties = FromJson<Dictionary<string, JsonElement>>( dbModel.Properties ),
+                Resources = FromJson<HashSet<string>>( dbModel.Resources ),
+            };
+
+            return scope;
+        }
+    }
+
+    public class ScopeDbModel
+    {
+        public Guid ScopeId { get; set; }
+        public string? Description { get; set; }
+        public string? Descriptions { get; set; }
+        public string? DisplayName { get; set; }
+        public string? DisplayNames { get; set; }
+        public string? ScopeName { get; set; }
+        public string? Properties { get; set; }
+        public string? Resources { get; set; }
     }
 }

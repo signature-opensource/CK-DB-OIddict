@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 
 namespace CK.DB.OIddict.Entities
 {
@@ -66,5 +67,45 @@ namespace CK.DB.OIddict.Entities
         /// Gets or sets the application type associated with the application.
         /// </summary>
         public string? Type { get; set; }
+
+        public static Application? FromDbModel( ApplicationDbModel? dbModel )
+        {
+            if( dbModel is null ) return null;
+
+            var application = new Application
+            {
+                ApplicationId = dbModel.ApplicationId,
+                ClientId = dbModel.ClientId,
+                ClientSecret = dbModel.ClientSecret,
+                ConsentType = dbModel.ConsentType,
+                DisplayName = dbModel.DisplayName,
+                DisplayNames = FromJson<Dictionary<CultureInfo, string>>( dbModel.DisplayNames ),
+                Permissions = FromJson<HashSet<string>>( dbModel.Permissions ),
+                PostLogoutRedirectUris = FromJson<HashSet<Uri>>( dbModel.PostLogoutRedirectUris ),
+                Properties = FromJson<Dictionary<string, JsonElement>>( dbModel.Properties ),
+                RedirectUris = FromJson<HashSet<Uri>>( dbModel.RedirectUris ),
+                Requirements = FromJson<HashSet<string>>( dbModel.Requirements ),
+                Type = dbModel.Type,
+            };
+
+            return application;
+        }
     }
+
+    public class ApplicationDbModel
+    {
+        public Guid ApplicationId { get; set; }
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+        public string ConsentType { get; set; }
+        public string DisplayName { get; set; }
+        public string DisplayNames { get; set; }
+        public string Permissions { get; set; }
+        public string PostLogoutRedirectUris { get; set; }
+        public string Properties { get; set; }
+        public string RedirectUris { get; set; }
+        public string Requirements { get; set; }
+        public string Type { get; set; }
+    }
+
 }
