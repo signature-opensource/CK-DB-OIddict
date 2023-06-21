@@ -62,13 +62,13 @@ namespace CK.DB.OIddict.Entities
 
     public class AuthorizationDbModel
     {
-        public Guid AuthorizationId { get; set; }
-        public Guid? ApplicationId { get; set; }
-        public DateTimeOffset? CreationDate { get; set; }
-        public string? Properties { get; set; }
-        public string? Scopes { get; set; }
-        public string? Status { get; set; }
-        public string? Subject { get; set; }
-        public string? Type { get; set; }
+        public Guid AuthorizationId { get; init; }
+        public Guid? ApplicationId { get; init; }
+        public DateTimeOffset? CreationDate { get; init; }
+        public string? Properties { get; init; }
+        public string? Scopes { get; init; }
+        public string? Status { get; init; }
+        public string? Subject { get; init; }
+        public string? Type { get; init; }
     }
 }

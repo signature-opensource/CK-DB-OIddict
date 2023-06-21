@@ -93,17 +93,17 @@ namespace CK.DB.OIddict.Entities
 
     public class TokenDbModel
     {
-        public Guid TokenId { get; set; }
-        public Guid? ApplicationId { get; set; }
-        public Guid? AuthorizationId { get; set; }
-        public DateTimeOffset? CreationDate { get; set; }
-        public DateTimeOffset? ExpirationDate { get; set; }
-        public string? Payload { get; set; }
-        public string? Properties { get; set; }
-        public DateTimeOffset? RedemptionDate { get; set; }
-        public string? ReferenceId { get; set; }
-        public string? Status { get; set; }
-        public string? Subject { get; set; }
-        public string? Type { get; set; }
+        public Guid TokenId { get; init; }
+        public Guid? ApplicationId { get; init; }
+        public Guid? AuthorizationId { get; init; }
+        public DateTimeOffset? CreationDate { get; init; }
+        public DateTimeOffset? ExpirationDate { get; init; }
+        public string? Payload { get; init; }
+        public string? Properties { get; init; }
+        public DateTimeOffset? RedemptionDate { get; init; }
+        public string? ReferenceId { get; init; }
+        public string? Status { get; init; }
+        public string? Subject { get; init; }
+        public string? Type { get; init; }
     }
 }

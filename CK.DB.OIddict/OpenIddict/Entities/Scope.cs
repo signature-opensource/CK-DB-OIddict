@@ -65,13 +65,13 @@ namespace CK.DB.OIddict.Entities
 
     public class ScopeDbModel
     {
-        public Guid ScopeId { get; set; }
-        public string? Description { get; set; }
-        public string? Descriptions { get; set; }
-        public string? DisplayName { get; set; }
-        public string? DisplayNames { get; set; }
-        public string? ScopeName { get; set; }
-        public string? Properties { get; set; }
-        public string? Resources { get; set; }
+        public Guid ScopeId { get; init; }
+        public string? Description { get; init; }
+        public string? Descriptions { get; init; }
+        public string? DisplayName { get; init; }
+        public string? DisplayNames { get; init; }
+        public string? ScopeName { get; init; }
+        public string? Properties { get; init; }
+        public string? Resources { get; init; }
     }
 }
