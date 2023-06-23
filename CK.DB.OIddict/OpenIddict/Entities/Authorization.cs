@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using CK.DB.OIddict.Dapper;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 
 namespace CK.DB.OIddict.Entities
@@ -48,7 +49,7 @@ namespace CK.DB.OIddict.Entities
             {
                 AuthorizationId = dbModel.AuthorizationId,
                 ApplicationId = dbModel.ApplicationId,
-                CreationDate = dbModel.CreationDate,
+                CreationDate = dbModel.CreationDate?.DateTime,
                 Properties = FromJson<Dictionary<string, JsonElement>>( dbModel.Properties ),
                 Scopes = FromJson<HashSet<string>>( dbModel.Scopes ),
                 Status = dbModel.Status,
@@ -64,7 +65,7 @@ namespace CK.DB.OIddict.Entities
     {
         public Guid AuthorizationId { get; init; }
         public Guid? ApplicationId { get; init; }
-        public DateTimeOffset? CreationDate { get; init; }
+        public DateTimeUtc? CreationDate { get; init; }
         public string? Properties { get; init; }
         public string? Scopes { get; init; }
         public string? Status { get; init; }

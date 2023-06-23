@@ -63,12 +63,9 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 
 ## TODO
 
-- Replace dapper type handling by targeting entities (Application, Token...) instead of built in types (Dictionary<...>)
-  to avoid clashes.
-- What about primary identity ? UserId is int, not passed through the claims.
+- What about primary identity ? UserId is int, not passed through the claims. => Pass userId or IAuthenticationInfo, depending on the client
+- Map claims => See previous point
 - Add enough Cris commands to provide a way to be able to manage an oidc application management.
-- Rewrite dates handling. A workaround is used right now for authorization expiration. The rest is wrong.
 - Add consent form example to the default server.
-- Map claims
 - Make most of classes internal
 - Simplify README.md by showing up directly the startup with OpenIddict config exposed.

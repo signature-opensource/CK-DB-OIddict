@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using CK.DB.OIddict.Dapper;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 
 namespace CK.DB.OIddict.Entities
@@ -24,19 +25,10 @@ namespace CK.DB.OIddict.Entities
         /// </summary>
         public DateTimeOffset? CreationDate { get; set; }
 
-        private DateTimeOffset _expirationDate;
-
         /// <summary>
         /// Gets or sets the expiration date associated with the token.
         /// </summary>
-        public DateTimeOffset? ExpirationDate
-        {
-            get => _expirationDate;
-            set
-            {
-                if( value != null ) _expirationDate = new DateTimeOffset( value.Value.DateTime, TimeSpan.Zero );
-            }
-        }
+        public DateTimeOffset? ExpirationDate { get; set; }
 
         /// <summary>Gets or sets the payload associated with the token.</summary>
         public string? Payload { get; set; }
@@ -76,11 +68,11 @@ namespace CK.DB.OIddict.Entities
                 TokenId = dbModel.TokenId,
                 ApplicationId = dbModel.ApplicationId,
                 AuthorizationId = dbModel.AuthorizationId,
-                CreationDate = dbModel.CreationDate,
-                ExpirationDate = dbModel.ExpirationDate,
+                CreationDate = dbModel.CreationDate?.DateTime,
+                ExpirationDate = dbModel.ExpirationDate?.DateTime,
                 Payload = dbModel.Payload,
                 Properties = FromJson<Dictionary<string, JsonElement>>( dbModel.Properties ),
-                RedemptionDate = dbModel.RedemptionDate,
+                RedemptionDate = dbModel.RedemptionDate?.DateTime,
                 ReferenceId = dbModel.ReferenceId,
                 Status = dbModel.Status,
                 Subject = dbModel.Subject,
@@ -96,11 +88,11 @@ namespace CK.DB.OIddict.Entities
         public Guid TokenId { get; init; }
         public Guid? ApplicationId { get; init; }
         public Guid? AuthorizationId { get; init; }
-        public DateTimeOffset? CreationDate { get; init; }
-        public DateTimeOffset? ExpirationDate { get; init; }
+        public DateTimeUtc? CreationDate { get; init; }
+        public DateTimeUtc? ExpirationDate { get; set; }
         public string? Payload { get; init; }
         public string? Properties { get; init; }
-        public DateTimeOffset? RedemptionDate { get; init; }
+        public DateTimeUtc? RedemptionDate { get; init; }
         public string? ReferenceId { get; init; }
         public string? Status { get; init; }
         public string? Subject { get; init; }
