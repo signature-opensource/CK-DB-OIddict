@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Globalization;
-using System.Text.Json;
-using CK.DB.OIddict.Dapper;
-using CK.DB.OIddict.Entities;
+﻿using CK.DB.OIddict.Entities;
 using CK.DB.OIddict.Stores;
-using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.DB.OIddict
