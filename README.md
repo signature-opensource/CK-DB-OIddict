@@ -40,6 +40,7 @@ The `loginPath` is mapped to `"/"`;
 
 ### Quick test
 
+
 Check out [OpenIddict Sample](https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Server/Worker.cs) to create an application.
 
 Go ahead and try the flow. You can use the [client example](Samples/SLog.AuthTest)
@@ -63,8 +64,6 @@ About unit tests => I don't think that much relevant. It would take a load of ti
 
 ## TODO
 
-- What about primary identity ? UserId is int, not passed through the claims. => Pass userId or IAuthenticationInfo, depending on the client
-- Map claims => See previous point
 - Add enough Cris commands to provide a way to be able to manage an oidc application management.
 - Add consent form example to the default server.
 - Make most of classes internal
