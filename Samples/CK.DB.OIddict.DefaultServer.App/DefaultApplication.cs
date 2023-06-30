@@ -73,6 +73,43 @@ namespace CK.DB.OIddict.DefaultServer.App
                         Scopes.Email,
                         Scopes.Profile,
                         Scopes.Roles,
+                        "scp:authinfo",
+                    },
+                    Requirements =
+                    {
+                        Features.ProofKeyForCodeExchange,
+                    },
+                }
+            );
+
+            await _applicationManager.CreateAsync
+            (
+                new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "anOtherApp",
+                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+                    ConsentType = Explicit,
+                    DisplayName = "CK-DB Default application",
+                    RedirectUris =
+                    {
+                        new Uri( "https://localhost:7273/callback/login/local" ),
+                        new Uri( "https://oidcdebugger.com/debug" ),
+                        new Uri( "https://localhost:5044/signin-oidc" ),
+                    },
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri( "https://localhost:7273/callback/logout/local" ),
+                    },
+                    Permissions =
+                    {
+                        Endpoints.Authorization,
+                        Endpoints.Logout,
+                        Endpoints.Token,
+                        GrantTypes.AuthorizationCode,
+                        ResponseTypes.Code,
+                        Scopes.Email,
+                        Scopes.Profile,
+                        Scopes.Roles,
                     },
                     Requirements =
                     {

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using CK.DB.Actor;
 using CK.DB.AspNet.OIddict.Helpers;
-using CK.SqlServer;
+using CK.DB.AspNet.OIddict.Identity;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +28,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
         private readonly IOpenIddictAuthorizationManager _authorizationManager;
         private readonly IOpenIddictScopeManager _scopeManager;
 
-        private readonly UserTable _userTable;
+        private readonly IIdentityStrategy _identityStrategy;
 
         private readonly string _challengeScheme;
         private readonly string? _loginUrl;
@@ -37,14 +38,14 @@ namespace CK.DB.AspNet.OIddict.Controllers
             IOpenIddictApplicationManager applicationManager,
             IOpenIddictAuthorizationManager authorizationManager,
             IOpenIddictScopeManager scopeManager,
-            UserTable userTable,
-            Configuration configuration
+            Configuration configuration,
+            IIdentityStrategy identityStrategy
         )
         {
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _scopeManager = scopeManager;
-            _userTable = userTable;
+            _identityStrategy = identityStrategy;
 
             _challengeScheme = configuration.AuthenticationScheme;
             _loginUrl = configuration.LoginPath;
@@ -90,21 +91,22 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             var authResult = await HttpContext.AuthenticateAsync( _challengeScheme );
 
+            #region Challenge
+
             var isAuthenticated = authResult.Principal?.Identity != null
                                && authResult.Principal           != null
                                && authResult.Principal.Identity.IsAuthenticated;
+
             var isAuthCookieStale =
             oidcRequest.MaxAge                                      != null
          && authResult.Properties?.IssuedUtc                        != null
          && DateTimeOffset.UtcNow - authResult.Properties.IssuedUtc > TimeSpan.FromSeconds( oidcRequest.MaxAge.Value );
 
-            if
-            (
-                authResult is not { Succeeded: true }
-             || !isAuthenticated
-             || oidcRequest.HasPrompt( Prompts.Login )
-             || isAuthCookieStale
-            )
+            var shouldChallenge = authResult is not { Succeeded: true }
+                               || !isAuthenticated
+                               || oidcRequest.HasPrompt( Prompts.Login )
+                               || isAuthCookieStale;
+            if( shouldChallenge )
             {
                 // If the client application requested promptless authentication,
                 // return an error indicating that the user is not logged in.
@@ -139,23 +141,20 @@ namespace CK.DB.AspNet.OIddict.Controllers
                 return HandleChallenge( redirectUri );
             }
 
-            // Retrieve the profile of the logged in user.
-            var userName = authResult.Principal.FindFirstValue( Claims.Name );
-            var userId = 0;
-            using( var sqlCallContext = new SqlStandardCallContext() )
-            {
-                userId = await _userTable.FindByNameAsync( sqlCallContext, userName );
-            }
+            #endregion
 
-            if( userId <= 0 ) throw new InvalidOperationException( "The user details cannot be retrieved." );
+            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( authResult.Principal );
+            if( authenticationInfo is null )
+                throw new InvalidOperationException( "The user details cannot be retrieved." );
+            var userName = authenticationInfo.UserName;
 
-            // Retrieve the application details from the database.
             var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId! )
                            ?? throw new InvalidOperationException
                               (
                                   "Details concerning the calling client application cannot be found."
                               );
 
+            var scopes = oidcRequest.GetScopes();
             // Retrieve the permanent authorizations associated with the user and the calling client application.
             var authorizations = await _authorizationManager.FindAsync
             (
@@ -163,7 +162,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
                 client: await _applicationManager.GetIdAsync( application ),
                 status: Statuses.Valid,
                 type: AuthorizationTypes.Permanent,
-                scopes: oidcRequest.GetScopes()
+                scopes: scopes
             ).ToListAsync();
 
             switch( await _applicationManager.GetConsentTypeAsync( application ) )
@@ -199,15 +198,12 @@ namespace CK.DB.AspNet.OIddict.Controllers
                     );
 
                     // Add the claims that will be persisted in the tokens.
-                    identity.SetClaim( Claims.Subject, userName )
-                            .SetClaim( Claims.Email, userName )
-                            .SetClaim( Claims.Name, userName );
-                    // no role
+                    _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
 
                     // Note: in this sample, the granted scopes match the requested scope
                     // but you may want to allow the user to uncheck specific scopes.
                     // For that, simply restrict the list of scopes before calling SetScopes.
-                    identity.SetScopes( oidcRequest.GetScopes() );
+                    identity.SetScopes( scopes );
                     // Uncomment next line when Scope Store is implemented
                     // identity.SetResources( await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync() );
 
@@ -286,26 +282,21 @@ namespace CK.DB.AspNet.OIddict.Controllers
         [HttpPost( Constants.AuthorizeUri ), ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptAsync()
         {
-            var request = HttpContext.GetOpenIddictServerRequest()
-                       ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
+            var oidcRequest = HttpContext.GetOpenIddictServerRequest()
+                           ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
 
-            // Retrieve the profile of the logged in user.
-            var userName = User.FindFirstValue( Claims.Name );
-            var userId = 0;
-            using( var sqlCallContext = new SqlStandardCallContext() )
-            {
-                userId = await _userTable.FindByNameAsync( sqlCallContext, userName );
-            }
+            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( User );
+            if( authenticationInfo is null )
+                throw new InvalidOperationException( "The user details cannot be retrieved." );
+            var userName = authenticationInfo.UserName;
 
-            if( userId <= 0 ) throw new InvalidOperationException( "The user details cannot be retrieved." );
-
-            // Retrieve the application details from the database.
-            var application = await _applicationManager.FindByClientIdAsync( request.ClientId )
+            var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId )
                            ?? throw new InvalidOperationException
                               (
                                   "Details concerning the calling client application cannot be found."
                               );
 
+            var scopes = oidcRequest.GetScopes();
             // Retrieve the permanent authorizations associated with the user and the calling client application.
             var authorizations = await _authorizationManager.FindAsync
             (
@@ -313,7 +304,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
                 client: await _applicationManager.GetIdAsync( application ),
                 status: Statuses.Valid,
                 type: AuthorizationTypes.Permanent,
-                scopes: request.GetScopes()
+                scopes: scopes
             ).ToListAsync();
 
             // Note: the same check is already made in the other action but is repeated
@@ -348,14 +339,12 @@ namespace CK.DB.AspNet.OIddict.Controllers
             );
 
             // Add the claims that will be persisted in the tokens.
-            identity.SetClaim( Claims.Subject, userName )
-                    .SetClaim( Claims.Email, userName )
-                    .SetClaim( Claims.Name, userName );
+            _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
 
             // Note: in this sample, the granted scopes match the requested scope
             // but you may want to allow the user to uncheck specific scopes.
             // For that, simply restrict the list of scopes before calling SetScopes.
-            identity.SetScopes( request.GetScopes() );
+            identity.SetScopes( scopes );
             // Uncomment next line when Scope Store is implemented
             // identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
 
@@ -388,44 +377,50 @@ namespace CK.DB.AspNet.OIddict.Controllers
         [HttpPost( Constants.TokenUri ), IgnoreAntiforgeryToken, Produces( "application/json" )]
         public async Task<IActionResult> ExchangeAsync()
         {
-            var request = HttpContext.GetOpenIddictServerRequest()
-                       ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
+            var oidcRequest = HttpContext.GetOpenIddictServerRequest()
+                           ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
 
             if
             (
-                !request.IsAuthorizationCodeGrantType()
-             && !request.IsRefreshTokenGrantType()
+                !oidcRequest.IsAuthorizationCodeGrantType()
+             && !oidcRequest.IsRefreshTokenGrantType()
             )
                 throw new InvalidOperationException( "The specified grant type is not supported." );
 
 
             // Retrieve the claims principal stored in the authorization code/refresh token.
-            var result = await HttpContext.AuthenticateAsync( OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
+            var authResult = await HttpContext.AuthenticateAsync
+            (
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+            );
 
             // Retrieve the user profile corresponding to the authorization code/refresh token.
-            var userName = result.Principal?.GetClaim( Claims.Subject );
+            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( authResult.Principal );
 
-            //todo: get user from db
-            if( userName is null )
+            if( authenticationInfo is null )
             {
                 return Forbid
                 (
                     authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                     properties: new AuthenticationProperties
                     (
-                        new Dictionary<string, string>
+                        new Dictionary<string, string?>
                         {
                             [Error] = Errors.InvalidGrant,
-                            [ErrorDescription] =
-                            "The token is no longer valid."
+                            [ErrorDescription] = "The token is no longer valid.",
                         }
                     )
                 );
             }
 
+            var scopes = authResult.Principal!.Claims
+                                   .Where( c => c.Type == Claims.Private.Scope )
+                                   .Select( c => c.Value )
+                                   .ToImmutableArray();
+
             var identity = new ClaimsIdentity
             (
-                result.Principal!.Claims,
+                authResult.Principal!.Claims,
                 authenticationType: TokenValidationParameters.DefaultAuthenticationType,
                 nameType: Claims.Name,
                 roleType: Claims.Role
@@ -433,10 +428,8 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             // Override the user claims present in the principal in case they
             // changed since the authorization code/refresh token was issued.
-            identity.SetClaim( Claims.Subject, userName )
-                    .SetClaim( Claims.Email, userName )
-                    .SetClaim( Claims.Name, userName );
-            // .SetClaims(Claims.Role, new List<string>().ToImmutableArray());
+            // SetUserClaims( identity, authenticationInfo, scopes, _setUserClaims );
+            _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
 
             identity.SetDestinations( GetDestinations );
 
@@ -451,6 +444,8 @@ namespace CK.DB.AspNet.OIddict.Controllers
             // Note: by default, claims are NOT automatically included in the access and identity tokens.
             // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
             // whether they should be included in access tokens, in identity tokens or in both.
+
+            Debug.Assert( claim.Subject != null, "claim.Subject != null" );
 
             switch( claim.Type )
             {

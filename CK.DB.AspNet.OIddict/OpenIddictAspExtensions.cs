@@ -59,9 +59,13 @@ namespace CK.DB.AspNet.OIddict
                     (
                         builder =>
                         {
-                            builder.UseOpenIddictServerAsp( WebFrontAuthOptions.OnlyAuthenticationScheme, loginPath );
+                            builder.UseOpenIddictServerAsp
+                            (
+                                WebFrontAuthOptions.OnlyAuthenticationScheme,
+                                loginPath
+                            );
 
-                            builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
+                            builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId, "authinfo" );
                             builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
 
                             serverBuilder?.Invoke( builder );

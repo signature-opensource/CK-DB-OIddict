@@ -31,10 +31,13 @@ namespace SLog.AuthTest
                            // and verifies that we are an application that is allowed to login with it.
                            oidc.ClientId = "ckdb-default-app";
                            oidc.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
-                           oidc.Scope.Clear();
+                           // oidc.Scope.Clear();
                            oidc.Scope.Add( "openid" );
+                           // Add this scope if there is no db. The user identifier will be filled with authentication information.
+                           // oidc.Scope.Add( "authinfo" );
                            // This is the route used in the IdP's "Reply URL" (e.g. "https://localhost:5044/signin-oidc")
                            oidc.CallbackPath = "/signin-oidc";
+                           oidc.Events.OnTokenResponseReceived = context => Task.CompletedTask;
                        }
                    )
                    .AddCookie
