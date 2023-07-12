@@ -1,0 +1,20 @@
+﻿<html>
+<head>
+  <title>Consent Form</title>
+</head>
+<body>
+
+<h1>Authorization</h1>
+
+<p class="lead text-left">
+  Do you want to grant <strong id="applicationName"></strong> access to your data?
+  (scopes requested: <span id="scope"></span>)
+</p>
+
+<form action="/connect/authorize" method="post">
+  <input type="submit" name="submit.Accept" value="Yes"/>
+  <input type="submit" name="submit.Deny" value="No"/>
+</form>
+
+</body>
+</html>

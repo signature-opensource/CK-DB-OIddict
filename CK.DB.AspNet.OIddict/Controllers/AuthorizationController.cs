@@ -245,29 +245,24 @@ namespace CK.DB.AspNet.OIddict.Controllers
                         )
                     );
 
-                // In every other case, render the consent form.
-                // default: return View(new AuthorizeViewModel
-                // {
-                //     ApplicationName = await _applicationManager.GetLocalizedDisplayNameAsync(application),
-                //     Scope = request.Scope
-                // });
-                default: return await SimulateUserAcceptConsentAsync();
-                // default:
-                // {
-                // var prompt = string.Join( " ", request.GetPrompts().Remove( Prompts.Login ) );
-                //
-                // var parameters = Request.HasFormContentType
-                // ? Request.Form.Where( parameter => parameter.Key  != Parameters.Prompt ).ToList()
-                // : Request.Query.Where( parameter => parameter.Key != Parameters.Prompt ).ToList();
-                //
-                // parameters.Add( KeyValuePair.Create( Parameters.Prompt, new StringValues( prompt ) ) );
-                //
-                // var redirectUri = Request.PathBase + Request.Path + QueryString.Create( parameters );
-                //
-                // var returnUrl = HttpUtility.UrlEncode( redirectUri );
-                // var consentRedirectUrl = $"/Authorization/Consent?returnUrl={returnUrl}";
-                // return Redirect( consentRedirectUrl );
-                // }
+                default: // Redirect to the consent form
+                {
+                    var prompt = string.Join( " ", oidcRequest.GetPrompts().Remove( Prompts.Login ) );
+
+                    var parameters = Request.HasFormContentType
+                    ? Request.Form.Where( parameter => parameter.Key  != Parameters.Prompt ).ToList()
+                    : Request.Query.Where( parameter => parameter.Key != Parameters.Prompt ).ToList();
+
+                    parameters.Add( KeyValuePair.Create( Parameters.Prompt, new StringValues( prompt ) ) );
+
+                    var applicationName = await _applicationManager.GetDisplayNameAsync( application );
+                    parameters.Add( KeyValuePair.Create( "applicationName", new StringValues( applicationName ) ) );
+
+                    var queryString = QueryString.Create( parameters );
+                    var consentUrl = "/Authorization/Consent.html" + queryString;
+
+                    return Redirect( consentUrl );
+                }
             }
         }
 

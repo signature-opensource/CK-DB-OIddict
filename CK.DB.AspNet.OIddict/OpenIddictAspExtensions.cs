@@ -65,7 +65,14 @@ namespace CK.DB.AspNet.OIddict
                                 loginPath
                             );
 
-                            builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId, "authinfo" );
+                            builder.RegisterScopes
+                            (
+                                Scopes.Email,
+                                Scopes.Profile,
+                                Scopes.Roles,
+                                Scopes.OpenId,
+                                "authinfo"
+                            );
                             builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
 
                             serverBuilder?.Invoke( builder );
@@ -127,7 +134,7 @@ namespace CK.DB.AspNet.OIddict
                 )
             );
 
-            services.AddControllers()
+            services.AddControllersWithViews() //TODO: remove views and register antiforgery
                     .AddApplicationPart( Assembly.Load( Assembly.GetExecutingAssembly().GetName().Name! ) );
 
 

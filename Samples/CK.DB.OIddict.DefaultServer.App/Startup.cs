@@ -9,6 +9,9 @@ using System.Reflection;
 using CK.AspNet.Auth;
 using CK.DB.AspNet.OIddict;
 using CK.DB.OIddict.Commands;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 
@@ -87,6 +90,7 @@ namespace CK.DB.OIddict.DefaultServer.App
             }
 
             #endregion
+
             services.AddCors
             (
                 options =>
@@ -101,9 +105,22 @@ namespace CK.DB.OIddict.DefaultServer.App
                     );
                 }
             );
+
+            services.AddAntiforgery
+            (
+                options =>
+                {
+                    options.HeaderName = "X-CSRF-TOKEN";
+                    options.FormFieldName = "__RequestVerificationToken";
+                    options.Cookie.Name = ".asp.AntiForgeryCookie";
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                }
+            );
         }
 
-        public void Configure( IApplicationBuilder app, IWebHostEnvironment env )
+        public void Configure( IApplicationBuilder app, IWebHostEnvironment env, IAntiforgery antiForgery )
         {
             if( env.IsDevelopment() )
             {
@@ -115,9 +132,40 @@ namespace CK.DB.OIddict.DefaultServer.App
             app.UseRouting();
 
             app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.Use
+            (
+                async ( context, next ) =>
+                {
+                    var authResult = await context.AuthenticateAsync( WebFrontAuthOptions.OnlyAuthenticationScheme );
+
+                    var isAuthenticated = authResult.Principal?.Identity is { IsAuthenticated: true };
+                    if ( isAuthenticated )
+                    {
+                        var tokens = antiForgery.GetAndStoreTokens( context );
+
+                        if( tokens.RequestToken != null )
+                        {
+                            context.Response.Cookies.Append
+                            (
+                                "AntiForgeryCookie",
+                                tokens.RequestToken,
+                                new CookieOptions
+                                {
+                                    HttpOnly = false,
+                                    Secure = true,
+                                    SameSite = SameSiteMode.Strict,
+                                }
+                            );
+                        }
+                    }
+
+                    await next.Invoke();
+                }
+            );
 
             app.UseCris();
-
 
             app.UseEndpoints
             (
