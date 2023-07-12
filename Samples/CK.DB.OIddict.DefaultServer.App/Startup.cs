@@ -40,57 +40,54 @@ namespace CK.DB.OIddict.DefaultServer.App
 
             services.AddCKDatabase( _startupMonitor, Assembly.GetEntryAssembly()!, connectionString );
 
-            services.AddRouting();
 
-            services.AddOpenIddictAspWebFrontAuth
-            (
-                "/",
-                "/Authorization/Consent.html",
-                serverBuilder: server => server.AddDevelopmentEncryptionCertificate()
-                                               .AddDevelopmentSigningCertificate()
-            );
+            services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
+                    .AddWebFrontAuth
+                    (
+                        options =>
+                        {
+                            //TODO: Let's see if AuthenticationCookieMode can be set to default.
+                            options.CookieMode = AuthenticationCookieMode.RootPath;
+                            options.AuthCookieName = ".oidcServerWebFront";
+                        }
+                    );
 
-            #region Explicit registration example
+            services.AddOpenIddict()
+                    .AddCore( builder => builder.UseOpenIddictCoreSql() )
+                    .AddServer
+                    (
+                        builder =>
+                        {
+                            builder.UseOpenIddictServerAsp
+                            (
+                                WebFrontAuthOptions.OnlyAuthenticationScheme,
+                                "/",
+                                "/Authorization/Consent.html"
+                            );
 
-            if( false )
-            {
-                services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-                        .AddWebFrontAuth
-                        (
-                            options =>
-                            {
-                                //TODO: Let's see if AuthenticationCookieMode can be set to default.
-                                options.CookieMode = AuthenticationCookieMode.RootPath;
-                                options.AuthCookieName = ".oidcServerWebFront";
-                            }
-                        );
+                            builder.AddDevelopmentEncryptionCertificate()
+                                   .AddDevelopmentSigningCertificate();
 
-                services.AddOpenIddict()
-                        .AddCore( builder => builder.UseOpenIddictCoreSql() )
-                        .AddServer
-                        (
-                            builder =>
-                            {
-                                builder.UseOpenIddictServerAsp( WebFrontAuthOptions.OnlyAuthenticationScheme, "/" );
+                            builder.RegisterScopes
+                            (
+                                Scopes.Email,
+                                Scopes.Profile,
+                                Scopes.Roles,
+                                Scopes.OpenId,
+                                "authinfo"
+                            );
+                            builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
+                        }
+                    )
+                    .AddValidation
+                    (
+                        builder =>
+                        {
+                            builder.UseLocalServer();
 
-                                builder.AddDevelopmentEncryptionCertificate()
-                                       .AddDevelopmentSigningCertificate();
-                                builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
-                                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
-                            }
-                        )
-                        .AddValidation
-                        (
-                            builder =>
-                            {
-                                builder.UseLocalServer();
-
-                                builder.UseAspNetCore();
-                            }
-                        );
-            }
-
-            #endregion
+                            builder.UseAspNetCore();
+                        }
+                    );
 
             services.AddCors
             (

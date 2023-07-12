@@ -12,12 +12,53 @@ First, configure OpenIddict and WebFrontAuth services:
 var connectionString = "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
 services.AddCKDatabase( new ActivityMonitor(), Assembly.GetEntryAssembly()!, connectionString );
 
-services.AddOpenIddictAspWebFrontAuth
-(
-    "/", // Your login path
-    serverBuilder: server => server.AddDevelopmentEncryptionCertificate()
-                                   .AddDevelopmentSigningCertificate()
-);
+services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
+        .AddWebFrontAuth
+        (
+            options =>
+            {
+                //TODO: Let's see if AuthenticationCookieMode can be set to default.
+                options.CookieMode = AuthenticationCookieMode.RootPath;
+                options.AuthCookieName = ".oidcServerWebFront";
+            }
+        );
+
+services.AddOpenIddict()
+        .AddCore( builder => builder.UseOpenIddictCoreSql() )
+        .AddServer
+        (
+            builder =>
+            {
+                builder.UseOpenIddictServerAsp
+                (
+                    WebFrontAuthOptions.OnlyAuthenticationScheme,
+                    "/",
+                    "/Authorization/Consent.html"
+                );
+
+                builder.AddDevelopmentEncryptionCertificate()
+                       .AddDevelopmentSigningCertificate();
+
+                builder.RegisterScopes
+                (
+                    Scopes.Email,
+                    Scopes.Profile,
+                    Scopes.Roles,
+                    Scopes.OpenId,
+                    "authinfo"
+                );
+                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
+            }
+        )
+        .AddValidation
+        (
+            builder =>
+            {
+                builder.UseLocalServer();
+
+                builder.UseAspNetCore();
+            }
+        );
 ```
 
 Then you need an actual front end, you can
@@ -73,53 +114,6 @@ await _applicationManager.CreateAsync
 Go ahead and try the flow. You can use the [client example](SLog.AuthTest)
 or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com).
 
-**More granular configuration**
-
-This is the recommended startup, but may be verbose to begin with and the previous sample still is able to behave the
-same.
-
-This sample is the one to use if you don't want to use WebFrontAuth. Here I am still using WebFrontAuth but you can
-change the authentication scheme to fit your needs. Note that you also want to remove the `loginPath` if not necessary.
-
-```csharp
-services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-        .AddWebFrontAuth
-        (
-            options =>
-            {
-                options.CookieMode = AuthenticationCookieMode.RootPath;
-                options.AuthCookieName = ".oidcServerWebFront";
-            }
-        );
-
-services.AddOpenIddict()
-        .AddCore( builder => builder.UseOpenIddictCoreSql() )
-        .AddServer
-        (
-            builder =>
-            {
-                builder.UseOpenIddictServerAsp( WebFrontAuthOptions.OnlyAuthenticationScheme, "/" );
-
-                builder.AddDevelopmentEncryptionCertificate()
-                       .AddDevelopmentSigningCertificate();
-                builder.RegisterScopes( Scopes.Email, Scopes.Profile, Scopes.Roles, Scopes.OpenId );
-                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
-            }
-        )
-        .AddValidation
-        (
-            builder =>
-            {
-                builder.UseLocalServer();
-
-                builder.UseAspNetCore();
-            }
-        );
-```
-
-Same as previous, create a front end and an application.
-
-
 ## About technical implementation and choices
 
 There are 2 main ideas here :
@@ -131,4 +125,4 @@ Configure endpoints paths : [CK.DB.AspNet.OIddict.Constants](Constants.cs)
 
 There is one trick that is important to point out. With `LoginPath` from [CK.DB.AspNet.OIddict.Configuration](Configuration.cs) set, the actual login will be called with `Redirect` instead of the usual `Challenge`. Hence the redirection is crafted directly.
 
-There is the possibility to call [CK.DB.AspNet.OIddict.OpenIddictAspExtensions.AddOpenIddictAspWebFrontAuth](OpenIddictAspExtensions.cs) to setup the services with WebFrontAuth. Note that the `LoginPath` is then mandatory since WFA does not support `Challenge`.
+If you run a flow that require the user consent, you have to provide a `ConsentPath`.

@@ -27,19 +27,66 @@ First, configure OpenIddict and WebFrontAuth services:
 var connectionString = "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
 services.AddCKDatabase( new ActivityMonitor(), Assembly.GetEntryAssembly()!, connectionString );
 
-services.AddOpenIddictAspWebFrontAuth
-(
-    "/", // Your login path
-    serverBuilder: server => server.AddDevelopmentEncryptionCertificate()
-                                   .AddDevelopmentSigningCertificate()
-);
+services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
+        .AddWebFrontAuth
+        (
+            options =>
+            {
+                //TODO: Let's see if AuthenticationCookieMode can be set to default.
+                options.CookieMode = AuthenticationCookieMode.RootPath;
+                options.AuthCookieName = ".oidcServerWebFront";
+            }
+        );
+
+services.AddOpenIddict()
+        .AddCore( builder => builder.UseOpenIddictCoreSql() )
+        .AddServer
+        (
+            builder =>
+            {
+                builder.UseOpenIddictServerAsp
+                (
+                    WebFrontAuthOptions.OnlyAuthenticationScheme,
+                    "/",
+                    "/Authorization/Consent.html"
+                );
+
+                builder.AddDevelopmentEncryptionCertificate()
+                       .AddDevelopmentSigningCertificate();
+
+                builder.RegisterScopes
+                (
+                    Scopes.Email,
+                    Scopes.Profile,
+                    Scopes.Roles,
+                    Scopes.OpenId,
+                    "authinfo"
+                );
+                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
+            }
+        )
+        .AddValidation
+        (
+            builder =>
+            {
+                builder.UseLocalServer();
+
+                builder.UseAspNetCore();
+            }
+        );
 ```
 
 Then you need an actual front end, check out the sample [in our example server](Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
-The `loginPath` is mapped to `"/"`;
+
+- The `loginPath` is mapped to `"/"`.
+- The `consentPath` is mapped to `"/Authorization/Consent.html"`
+
+The consent page is called from the backend with all values sent as a query string. Those values has to be sent back with the form.
+The AntiForgery Token has to be send in the form too.
+
+To finish, [create an oidc application](./CK.DB.AspNet.OIddict/README.md) that fits your needs.
 
 ### Quick test
-
 
 Check out [OpenIddict Sample](https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Server/Worker.cs) to create an application.
 
@@ -60,11 +107,7 @@ oidc provider !
 - [CK.DB.OIddict.DefaultClient](Samples/CK.DB.OIddict.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
   not.
 
-About unit tests => I don't think that much relevant. It would take a load of time for no much reason.
-
 ## TODO
 
 - Add enough Cris commands to provide a way to be able to manage an oidc application management.
-- Add consent form example to the default server.
 - Make most of classes internal
-- Simplify README.md by showing up directly the startup with OpenIddict config exposed.

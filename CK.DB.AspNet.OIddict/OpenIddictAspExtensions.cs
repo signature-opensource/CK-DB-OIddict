@@ -1,100 +1,10 @@
-﻿using System;
-using System.Reflection;
-using CK.AspNet.Auth;
-using CK.DB.OIddict;
+﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace CK.DB.AspNet.OIddict
 {
     public static class OpenIddictAspExtensions
     {
-        /// <summary>
-        /// Add OpenIddict Core and registers the Sql stores services in the DI container and
-        /// configures OpenIddict to use the related Sql entities by default.
-        /// Add OpenIddict Server and registers OpenIddict with Authorization Code Flow and its endpoints.
-        /// Add OpenIddict Validation.
-        /// Add WebFrontAuth Authentication for login.
-        /// </summary>
-        /// <param name="services">The services collection.</param>
-        /// <param name="loginPath">Path to WFA login page where to redirect to on Challenge.</param>
-        /// <param name="wfaOptions">Configuration action</param>
-        /// <param name="serverBuilder">The configuration delegate used to configure OpenIddict server services.</param>
-        /// <param name="coreBuilder">The configuration delegate used to configure the OpenIddict services.</param>
-        /// <param name="validationBuilder">The configuration delegate used to configure OpenIddict validation services.</param>
-        /// <returns></returns>
-        public static IServiceCollection AddOpenIddictAspWebFrontAuth
-        (
-            this IServiceCollection services,
-            string loginPath,
-            string consentPath,
-            Action<WebFrontAuthOptions>? wfaOptions = null,
-            Action<OpenIddictServerBuilder>? serverBuilder = null,
-            Action<OpenIddictCoreBuilder>? coreBuilder = null,
-            Action<OpenIddictValidationBuilder>? validationBuilder = null
-        )
-        {
-            services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-                    .AddWebFrontAuth
-                    (
-                        options =>
-                        {
-                            options.AuthCookieName = ".oidcServerWebFront";
-                            //TODO: Let's see if AuthenticationCookieMode can be set to default.
-                            options.CookieMode = AuthenticationCookieMode.RootPath;
-
-                            wfaOptions?.Invoke( options );
-                        }
-                    );
-
-            services.AddOpenIddict()
-                    .AddCore
-                    (
-                        builder =>
-                        {
-                            builder.UseOpenIddictCoreSql();
-                            coreBuilder?.Invoke( builder );
-                        }
-                    )
-                    .AddServer
-                    (
-                        builder =>
-                        {
-                            builder.UseOpenIddictServerAsp
-                            (
-                                WebFrontAuthOptions.OnlyAuthenticationScheme,
-                                loginPath,
-                                consentPath
-                            );
-
-                            builder.RegisterScopes
-                            (
-                                Scopes.Email,
-                                Scopes.Profile,
-                                Scopes.Roles,
-                                Scopes.OpenId,
-                                "authinfo"
-                            );
-                            builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
-
-                            serverBuilder?.Invoke( builder );
-                        }
-                    )
-                    .AddValidation
-                    (
-                        builder =>
-                        {
-                            builder.UseLocalServer();
-
-                            builder.UseAspNetCore();
-
-                            validationBuilder?.Invoke( builder );
-                        }
-                    );
-
-            return services;
-        }
-
         /// <summary>
         /// Add Authorization Code Flow and its endpoints.
         /// </summary>
@@ -141,6 +51,8 @@ namespace CK.DB.AspNet.OIddict
 
             services.AddControllersWithViews() //TODO: remove views and register antiforgery
                     .AddApplicationPart( Assembly.Load( Assembly.GetExecutingAssembly().GetName().Name! ) );
+
+            services.AddRouting();
 
 
             return builder;
