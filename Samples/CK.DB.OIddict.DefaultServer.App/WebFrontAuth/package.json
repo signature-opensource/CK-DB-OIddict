@@ -4,7 +4,7 @@
   "description": "Test app for WebFrontAuth backend.",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --config webpack.config.js",
     "build": "genversion --es6 --semi WFATester.version.ts && webpack"
   },
   "author": "",

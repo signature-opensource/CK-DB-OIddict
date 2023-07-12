@@ -5,7 +5,6 @@
 </head>
 
 <body>
-    <script id="script" src="bundle.js"></script>
     <div class="header">
         <div class="endPoint">
             <h4 id="configName">Configuration (client version: )</h4>
@@ -14,7 +13,7 @@
             <pre> disableSsl: <input type="checkbox" id="epDisableSsl" /></pre>
             <pre>Use Local Storage: <input type="checkbox" id="epUseLocalStorage" /></pre>
             <pre>Skip EndPoint Version Check: <input type="checkbox" id="epCheckEndPointVersion" checked/></pre>
-            <button id="epApply" onclick="Sample.applyEndPoint()" disabled>Apply</button>
+            <button id="epApply" onclick="Sample.index.applyEndPoint()" disabled>Apply</button>
         </div>
         <div class="userStatus">
             <pre> AuthLevel: <div class="authLevel" id="userAuthLevel">None</div></pre>
@@ -31,7 +30,7 @@
                         <button
                         id="refreshButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('refreshShrink', 'refreshButtonShrink')"
+                        onclick="Sample.index.shrink('refreshShrink', 'refreshButtonShrink')"
                         >
                             >
                         </button>
@@ -44,7 +43,7 @@
                         RequestVersion: <input type="checkbox" id="refreshVersion">
                     </div>
                     <div class="sendButton">
-                        <button id="refreshSend" onclick="Sample.refresh()">Send</button>
+                        <button id="refreshSend" onclick="Sample.index.refresh()">Send</button>
                     </div>
                 </div>
             </div>
@@ -56,7 +55,7 @@
                         <button
                         id="logoutButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('logoutShrink', 'logoutButtonShrink')"
+                        onclick="Sample.index.shrink('logoutShrink', 'logoutButtonShrink')"
                         >
                             >
                         </button>
@@ -64,7 +63,7 @@
                 </div>
                 <div class="contentShrink" id="logoutShrink">
                     <div class="sendButton">
-                        <button id="logoutSend" onclick="Sample.logout()">Send</button>
+                        <button id="logoutSend" onclick="Sample.index.logout()">Send</button>
                     </div>
                 </div>
 
@@ -77,7 +76,7 @@
                         <button
                         id="popupLoginButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('popupLoginShrink', 'popupLoginButtonShrink')"
+                        onclick="Sample.index.shrink('popupLoginShrink', 'popupLoginButtonShrink')"
                         >
                             >
                         </button>
@@ -97,7 +96,7 @@
                         <textarea id="popupLoginUserData" cols="30" rows="10"></textarea>
                     </div>
                     <div class="sendButton">
-                        <button id="popupLoginSend" onclick="Sample.startPopupLogin()">Send</button>
+                        <button id="popupLoginSend" onclick="Sample.index.startPopupLogin()">Send</button>
                     </div>
                 </div>
             </div>
@@ -109,7 +108,7 @@
                         <button
                         id="inlineLoginButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('inlineLoginShrink', 'inlineLoginButtonShrink')"
+                        onclick="Sample.index.shrink('inlineLoginShrink', 'inlineLoginButtonShrink')"
                         >
                             >
                         </button>
@@ -131,7 +130,7 @@
                         <textarea id="inlineLoginUserData" cols="30" rows="10"></textarea>
                     </div>
                     <div class="sendButton">
-                        <button id="inlineLoginSend" onclick="Sample.startInlineLogin()">Send</button>
+                        <button id="inlineLoginSend" onclick="Sample.index.startInlineLogin()">Send</button>
                     </div>
                 </div>
             </div>
@@ -143,7 +142,7 @@
                         <button
                         id="basicLoginButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('basicLoginShrink', 'basicLoginButtonShrink')"
+                        onclick="Sample.index.shrink('basicLoginShrink', 'basicLoginButtonShrink')"
                         >
                             >
                         </button>
@@ -165,7 +164,7 @@
                         <textarea id="basicLoginUserData" cols="30" rows="10"></textarea>
                     </div>
                     <div class="sendButton">
-                        <button id="basicLoginSend" onclick="Sample.basicLogin()">Send</button>
+                        <button id="basicLoginSend" onclick="Sample.index.basicLogin()">Send</button>
                     </div>
                 </div>
             </div>
@@ -174,7 +173,7 @@
                 <div>
                     <h4 class="shrinkTitle">
                         Impersonate
-                        <button id="impersonateButtonShrink" class="shrinkButton" onclick="Sample.shrink('impersonateShrink', 'impersonateButtonShrink')">
+                        <button id="impersonateButtonShrink" class="shrinkButton" onclick="Sample.index.shrink('impersonateShrink', 'impersonateButtonShrink')">
                             >
                         </button>
                     </h4>
@@ -184,7 +183,7 @@
                         <input type="radio" name="impersonateBy" id="impersonateByUserName">UserName</input> or <input type="radio" name="impersonateBy" id="impersonateByUserId" checked>UserId</input>: <input type="text" id="impersonateUserIdOrName">
                     </div>
                     <div class="sendButton">
-                        <button id="impersonateSend" onclick="Sample.impersonate()">Send</button>
+                        <button id="impersonateSend" onclick="Sample.index.impersonate()">Send</button>
                     </div>
                 </div>
             </div>
@@ -196,7 +195,7 @@
                         <button
                         id="unsafeDirectLoginButtonShrink"
                         class="shrinkButton"
-                        onclick="Sample.shrink('unsafeDirectLoginShrink', 'unsafeDirectLoginButtonShrink')"
+                        onclick="Sample.index.shrink('unsafeDirectLoginShrink', 'unsafeDirectLoginButtonShrink')"
                         >
                             >
                         </button>
@@ -215,7 +214,7 @@
                         <textarea id="unsafeDirectLoginPayload" cols="30" rows="10"></textarea>
                     </div>
                     <div class="sendButton">
-                        <button id="unsafeDirectLoginSend" onclick="Sample.unsafeDirectLogin()">Send</button>
+                        <button id="unsafeDirectLoginSend" onclick="Sample.index.unsafeDirectLogin()">Send</button>
                     </div>
                 </div>
             </div>
