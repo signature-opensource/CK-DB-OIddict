@@ -27,6 +27,7 @@ namespace CK.DB.AspNet.OIddict
         (
             this IServiceCollection services,
             string loginPath,
+            string consentPath,
             Action<WebFrontAuthOptions>? wfaOptions = null,
             Action<OpenIddictServerBuilder>? serverBuilder = null,
             Action<OpenIddictCoreBuilder>? coreBuilder = null,
@@ -62,7 +63,8 @@ namespace CK.DB.AspNet.OIddict
                             builder.UseOpenIddictServerAsp
                             (
                                 WebFrontAuthOptions.OnlyAuthenticationScheme,
-                                loginPath
+                                loginPath,
+                                consentPath
                             );
 
                             builder.RegisterScopes
@@ -100,12 +102,14 @@ namespace CK.DB.AspNet.OIddict
         /// <param name="authenticationScheme">The scheme that handle the Challenge.</param>
         /// <param name="loginPath">If set, bypass Authentication Handler on Challenge on the provided scheme.
         /// Use it if the authenticationScheme does not support standard Challenge.</param>
+        /// <param name="consentPath">Must be provided when using a flow that require user consent.</param>
         /// <returns></returns>
         public static OpenIddictServerBuilder UseOpenIddictServerAsp
         (
             this OpenIddictServerBuilder builder,
             string authenticationScheme,
-            string? loginPath = null
+            string? loginPath = null,
+            string? consentPath = null
         )
         {
             builder.SetAuthorizationEndpointUris( Constants.AuthorizeUri )
@@ -130,7 +134,8 @@ namespace CK.DB.AspNet.OIddict
                 new Configuration
                 (
                     authenticationScheme,
-                    loginPath
+                    loginPath,
+                    consentPath
                 )
             );
 

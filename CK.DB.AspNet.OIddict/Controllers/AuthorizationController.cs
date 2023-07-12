@@ -32,6 +32,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
         private readonly string _challengeScheme;
         private readonly string? _loginUrl;
+        private readonly string? _consentUrl;
 
         public AuthorizationController
         (
@@ -49,6 +50,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             _challengeScheme = configuration.AuthenticationScheme;
             _loginUrl = configuration.LoginPath;
+            _consentUrl = configuration.ConsentPath;
         }
 
         // This could be a strategy pattern to avoid the if statement.
@@ -259,7 +261,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
                     parameters.Add( KeyValuePair.Create( "applicationName", new StringValues( applicationName ) ) );
 
                     var queryString = QueryString.Create( parameters );
-                    var consentUrl = "/Authorization/Consent.html" + queryString;
+                    var consentUrl = _consentUrl + queryString;
 
                     return Redirect( consentUrl );
                 }

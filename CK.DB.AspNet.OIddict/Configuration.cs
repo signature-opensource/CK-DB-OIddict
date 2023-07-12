@@ -9,6 +9,7 @@
     public record Configuration
     (
         string AuthenticationScheme,
-        string? LoginPath
+        string? LoginPath,
+        string? ConsentPath
     );
 }

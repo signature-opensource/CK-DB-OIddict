@@ -45,6 +45,7 @@ namespace CK.DB.OIddict.DefaultServer.App
             services.AddOpenIddictAspWebFrontAuth
             (
                 "/",
+                "/Authorization/Consent.html",
                 serverBuilder: server => server.AddDevelopmentEncryptionCertificate()
                                                .AddDevelopmentSigningCertificate()
             );
@@ -141,7 +142,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                     var authResult = await context.AuthenticateAsync( WebFrontAuthOptions.OnlyAuthenticationScheme );
 
                     var isAuthenticated = authResult.Principal?.Identity is { IsAuthenticated: true };
-                    if ( isAuthenticated )
+                    if( isAuthenticated )
                     {
                         var tokens = antiForgery.GetAndStoreTokens( context );
 
