@@ -76,6 +76,9 @@ services.AddOpenIddict()
         );
 ```
 
+Next, you want to [implement `IIdentityStrategy`](./CK.DB.AspNet.OIddict/README.md) to validate the user (against a database usually) and map the claims.
+Here is a simple implementation for [WebFrontAuth](./Samples/CK.DB.OIddict.DefaultServer.App/WfaIdentityStrategy.cs).
+
 Then you need an actual front end, check out the sample [in our example server](Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
 
 - The `loginPath` is mapped to `"/"`.

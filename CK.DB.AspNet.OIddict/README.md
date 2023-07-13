@@ -61,6 +61,10 @@ services.AddOpenIddict()
         );
 ```
 
+Next, you want to [implement `IIdentityStrategy`](./Identity/IIdentityStrategy.cs) to validate the user (against a
+database usually) and map the claims. This will be automatically injected to the dependency injection container.
+Here is a simple implementation for [WebFrontAuth](../Samples/CK.DB.OIddict.DefaultServer.App/WfaIdentityStrategy.cs).
+
 Then you need an actual front end, you can
 use [WebFrontAuth sample](https://github.com/Woinkk/CK-Sample-WebFrontAuth/tree/master/WFATester), hence the `loginPath`
 mapped to `"/"`.
