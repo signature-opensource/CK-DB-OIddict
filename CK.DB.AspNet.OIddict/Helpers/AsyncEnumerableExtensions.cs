@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace CK.DB.AspNet.OIddict.Helpers
 {
-    public static class AsyncEnumerableExtensions
+    internal static class AsyncEnumerableExtensions
     {
         public static Task<List<T>> ToListAsync<T>( this IAsyncEnumerable<T> source )
         {

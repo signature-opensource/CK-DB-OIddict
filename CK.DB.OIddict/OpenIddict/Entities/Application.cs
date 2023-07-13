@@ -68,7 +68,7 @@ namespace CK.DB.OIddict.Entities
         /// </summary>
         public string? Type { get; set; }
 
-        public static Application? FromDbModel( ApplicationDbModel? dbModel )
+        internal static Application? FromDbModel( ApplicationDbModel? dbModel )
         {
             if( dbModel is null ) return null;
 
@@ -92,7 +92,7 @@ namespace CK.DB.OIddict.Entities
         }
     }
 
-    public class ApplicationDbModel
+    internal class ApplicationDbModel
     {
         public Guid ApplicationId { get; init; }
         public string? ClientId { get; init; }

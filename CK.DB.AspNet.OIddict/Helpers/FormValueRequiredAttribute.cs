@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace CK.DB.AspNet.OIddict.Helpers
 {
-    public sealed class FormValueRequiredAttribute : ActionMethodSelectorAttribute
+    internal sealed class FormValueRequiredAttribute : ActionMethodSelectorAttribute
     {
         private readonly string _name;
 

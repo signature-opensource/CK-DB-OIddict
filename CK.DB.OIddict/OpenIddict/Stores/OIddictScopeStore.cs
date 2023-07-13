@@ -17,7 +17,7 @@ using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 
 namespace CK.DB.OIddict.Stores
 {
-    public sealed class OIddictScopeStore : IOpenIddictScopeStore<Scope>
+    internal sealed class OIddictScopeStore : IOpenIddictScopeStore<Scope>
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictScopeTable _scopeTable;

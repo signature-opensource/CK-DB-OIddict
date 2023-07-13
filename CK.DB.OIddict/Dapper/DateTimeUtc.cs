@@ -2,7 +2,7 @@
 
 namespace CK.DB.OIddict.Dapper
 {
-    public class DateTimeUtc
+    internal class DateTimeUtc
     {
         private readonly DateTime _dateTime;
 

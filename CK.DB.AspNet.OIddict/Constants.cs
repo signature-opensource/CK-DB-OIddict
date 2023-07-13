@@ -1,6 +1,6 @@
 namespace CK.DB.AspNet.OIddict
 {
-    public static class Constants
+    internal static class Constants
     {
         public const string AuthorizeUri = "connect/authorize";
         public const string LogoutUri = "connect/logout";

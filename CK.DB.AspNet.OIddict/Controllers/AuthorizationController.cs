@@ -19,7 +19,6 @@ using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using static OpenIddict.Server.AspNetCore.OpenIddictServerAspNetCoreConstants.Properties;
 
-
 namespace CK.DB.AspNet.OIddict.Controllers
 {
     public class AuthorizationController : Controller

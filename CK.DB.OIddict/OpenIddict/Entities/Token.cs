@@ -59,7 +59,7 @@ namespace CK.DB.OIddict.Entities
         /// <summary>Gets or sets the token type.</summary>
         public string? Type { get; set; }
 
-        public static Token? FromDbModel( TokenDbModel? dbModel )
+        internal static Token? FromDbModel( TokenDbModel? dbModel )
         {
             if( dbModel is null ) return null;
 
@@ -83,7 +83,7 @@ namespace CK.DB.OIddict.Entities
         }
     }
 
-    public class TokenDbModel
+    internal class TokenDbModel
     {
         public Guid TokenId { get; init; }
         public Guid? ApplicationId { get; init; }

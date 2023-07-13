@@ -17,7 +17,7 @@ using static CK.DB.OIddict.Entities.Authorization;
 
 namespace CK.DB.OIddict.Stores
 {
-    public sealed class OIddictAuthorizationStore : IOpenIddictAuthorizationStore<Authorization>
+    internal sealed class OIddictAuthorizationStore : IOpenIddictAuthorizationStore<Authorization>
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictAuthorizationTable _authorizationTable;

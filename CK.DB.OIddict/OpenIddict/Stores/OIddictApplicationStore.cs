@@ -19,7 +19,7 @@ using static CK.DB.OIddict.Entities.Application;
 namespace CK.DB.OIddict.Stores
 {
     /// <inheritdoc />
-    public sealed class OIddictApplicationStore : IOpenIddictApplicationStore<Application>
+    internal sealed class OIddictApplicationStore : IOpenIddictApplicationStore<Application>
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictApplicationTable _applicationTable;

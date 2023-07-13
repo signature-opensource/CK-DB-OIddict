@@ -41,7 +41,7 @@ namespace CK.DB.OIddict.Entities
         /// <summary>Gets or sets the type of the authorization.</summary>
         public string? Type { get; set; }
 
-        public static Authorization? FromDbModel( AuthorizationDbModel? dbModel )
+        internal static Authorization? FromDbModel( AuthorizationDbModel? dbModel )
         {
             if( dbModel is null ) return null;
 
@@ -61,7 +61,7 @@ namespace CK.DB.OIddict.Entities
         }
     }
 
-    public class AuthorizationDbModel
+    internal class AuthorizationDbModel
     {
         public Guid AuthorizationId { get; init; }
         public Guid? ApplicationId { get; init; }

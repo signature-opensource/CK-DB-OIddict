@@ -43,7 +43,7 @@ namespace CK.DB.OIddict.Entities
         /// <summary>Gets the resources associated with the scope.</summary>
         public HashSet<string>? Resources { get; set; }
 
-        public static Scope? FromDbModel( ScopeDbModel? dbModel )
+        internal static Scope? FromDbModel( ScopeDbModel? dbModel )
         {
             if( dbModel is null ) return null;
 
@@ -63,7 +63,7 @@ namespace CK.DB.OIddict.Entities
         }
     }
 
-    public class ScopeDbModel
+    internal class ScopeDbModel
     {
         public Guid ScopeId { get; init; }
         public string? Description { get; init; }

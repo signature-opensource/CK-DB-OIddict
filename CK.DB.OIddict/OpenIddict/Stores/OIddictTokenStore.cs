@@ -17,7 +17,7 @@ using static CK.DB.OIddict.Entities.Token;
 
 namespace CK.DB.OIddict.Stores
 {
-    public sealed class OIddictTokenStore : IOpenIddictTokenStore<Token>
+    internal sealed class OIddictTokenStore : IOpenIddictTokenStore<Token>
     {
         private readonly ISqlCallContext _callContext;
         private readonly OpenIddictTokenTable _tokenTable;
