@@ -59,11 +59,12 @@ namespace CK.DB.OIddict.DefaultServer.App
                         builder =>
                         {
                             builder.UseOpenIddictServerAsp
-                            (
-                                WebFrontAuthOptions.OnlyAuthenticationScheme,
-                                "/",
-                                "/Authorization/Consent.html"
-                            );
+                                   (
+                                       WebFrontAuthOptions.OnlyAuthenticationScheme,
+                                       "/",
+                                       "/Authorization/Consent.html"
+                                   )
+                                   .WithDefaultAntiForgery( o => o.FormFieldName = "__RequestVerificationToken" );
 
                             builder.AddDevelopmentEncryptionCertificate()
                                    .AddDevelopmentSigningCertificate();
@@ -76,6 +77,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                                 Scopes.OpenId,
                                 "authinfo"
                             );
+
                             builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
                         }
                     )
@@ -103,19 +105,6 @@ namespace CK.DB.OIddict.DefaultServer.App
                     );
                 }
             );
-
-            services.AddAntiforgery
-            (
-                options =>
-                {
-                    options.HeaderName = "X-CSRF-TOKEN";
-                    options.FormFieldName = "__RequestVerificationToken";
-                    options.Cookie.Name = ".asp.AntiForgeryCookie";
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                }
-            );
         }
 
         public void Configure( IApplicationBuilder app, IWebHostEnvironment env, IAntiforgery antiForgery )
@@ -132,30 +121,7 @@ namespace CK.DB.OIddict.DefaultServer.App
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.Use
-            (
-                async ( context, next ) =>
-                {
-                    var tokens = antiForgery.GetAndStoreTokens( context );
-
-                    if( tokens.RequestToken != null )
-                    {
-                        context.Response.Cookies.Append
-                        (
-                            "AntiForgeryCookie",
-                            tokens.RequestToken,
-                            new CookieOptions
-                            {
-                                HttpOnly = false, // let the front-end read this cookie to set a form or header value.
-                                Secure = true,
-                                SameSite = SameSiteMode.Strict,
-                            }
-                        );
-                    }
-
-                    await next.Invoke();
-                }
-            );
+            app.UseDefaultAntiForgeryMiddleware( "AntiForgeryCookie" );
 
             app.UseCris();
 

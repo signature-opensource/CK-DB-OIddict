@@ -1,10 +1,12 @@
 # CK.DB.AspNet.OIddict
 
-## Getting started
+## Usage
 
 Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
 
-**WebFrontAuth Quick start.**
+### Startup and configuration
+
+**WebFrontAuth as example.**
 
 First, configure OpenIddict and WebFrontAuth services:
 
@@ -30,11 +32,12 @@ services.AddOpenIddict()
             builder =>
             {
                 builder.UseOpenIddictServerAsp
-                (
-                    WebFrontAuthOptions.OnlyAuthenticationScheme,
-                    "/",
-                    "/Authorization/Consent.html"
-                );
+                       (
+                           WebFrontAuthOptions.OnlyAuthenticationScheme,
+                           "/",
+                           "/Authorization/Consent.html"
+                       )
+                       .WithDefaultAntiForgery( o => o.FormFieldName = "__RequestVerificationToken" );
 
                 builder.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
@@ -61,15 +64,39 @@ services.AddOpenIddict()
         );
 ```
 
-Next, you want to [implement `IIdentityStrategy`](./Identity/IIdentityStrategy.cs) to validate the user (against a
-database usually) and map the claims. This will be automatically injected to the dependency injection container.
+On the Configure method, add the default AntiForgery middleware between auth and endpoints.
+
+```csharp
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseDefaultAntiForgeryMiddleware( "AntiForgeryCookie" );
+
+app.UseEndpoints();
+```
+
+### Identity
+
+Next, you want to [implement `IIdentityStrategy`](./Identity/IIdentityStrategy.cs) to validate the user (against a database usually) and map the claims. This will be automatically injected to the dependency injection container.
 Here is a simple implementation for [WebFrontAuth](../Samples/CK.DB.OIddict.DefaultServer.App/WfaIdentityStrategy.cs).
 
-Then you need an actual front end, you can
-use [WebFrontAuth sample](https://github.com/Woinkk/CK-Sample-WebFrontAuth/tree/master/WFATester), hence the `loginPath`
-mapped to `"/"`.
-You can also directly look
-at [the same sample adapted for the flow in our example server](CK.DB.OIddict.DefaultServer.App/WebFrontAuth).
+### Login and Consent pages
+
+Then you need an actual front end, check out the
+sample [in our example server](../Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
+
+- The `loginPath` is mapped to `"/"`.
+- The `consentPath` is mapped to `"/Authorization/Consent.html"`
+- You have to handle the AntiForgery by getting the value of the cookie `AntiForgeryCookie` and put it into a form value
+  with name `__RequestVerificationToken` if you have used the defaults in this sample.
+
+The consent page is called from the backend with all values sent as a query string. Those values has to be sent back
+with the form.
+The AntiForgery Token has to be send in the form too.
+
+### Application
 
 Of course, you need an application :
 
@@ -115,7 +142,9 @@ await _applicationManager.CreateAsync
 );
 ```
 
-Go ahead and try the flow. You can use the [client example](SLog.AuthTest)
+### Tests
+
+Go ahead and try the flow. You can use the [client example](../Samples/SLog.AuthTest)
 or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com).
 
 ## About technical implementation and choices

@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.DB.AspNet.OIddict
@@ -54,6 +57,30 @@ namespace CK.DB.AspNet.OIddict
 
             services.AddRouting();
 
+
+            return builder;
+        }
+
+        public static OpenIddictServerBuilder WithDefaultAntiForgery
+        (
+            this OpenIddictServerBuilder builder,
+            Action<AntiforgeryOptions>? antiForgeryOptions = null
+        )
+        {
+            builder.Services.AddAntiforgery
+            (
+                options =>
+                {
+                    options.HeaderName = "X-CSRF-TOKEN";
+                    options.FormFieldName = "__RequestVerificationToken";
+                    options.Cookie.Name = ".asp.AntiForgeryCookie";
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                    antiForgeryOptions?.Invoke( options );
+                }
+            );
 
             return builder;
         }

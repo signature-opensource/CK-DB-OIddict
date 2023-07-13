@@ -45,11 +45,12 @@ services.AddOpenIddict()
             builder =>
             {
                 builder.UseOpenIddictServerAsp
-                (
-                    WebFrontAuthOptions.OnlyAuthenticationScheme,
-                    "/",
-                    "/Authorization/Consent.html"
-                );
+                       (
+                           WebFrontAuthOptions.OnlyAuthenticationScheme,
+                           "/",
+                           "/Authorization/Consent.html"
+                       )
+                       .WithDefaultAntiForgery( o => o.FormFieldName = "__RequestVerificationToken" );
 
                 builder.AddDevelopmentEncryptionCertificate()
                        .AddDevelopmentSigningCertificate();
@@ -76,6 +77,20 @@ services.AddOpenIddict()
         );
 ```
 
+On the Configure method, add the default AntiForgery middleware between auth and endpoints.
+
+
+```csharp
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseDefaultAntiForgeryMiddleware( "AntiForgeryCookie" );
+
+app.UseEndpoints();
+```
+
 Next, you want to [implement `IIdentityStrategy`](./CK.DB.AspNet.OIddict/README.md) to validate the user (against a database usually) and map the claims.
 Here is a simple implementation for [WebFrontAuth](./Samples/CK.DB.OIddict.DefaultServer.App/WfaIdentityStrategy.cs).
 
@@ -83,6 +98,7 @@ Then you need an actual front end, check out the sample [in our example server](
 
 - The `loginPath` is mapped to `"/"`.
 - The `consentPath` is mapped to `"/Authorization/Consent.html"`
+- You have to handle the AntiForgery by getting the value of the cookie `AntiForgeryCookie` and put it into a form value with name `__RequestVerificationToken` if you have used the defaults in this sample.
 
 The consent page is called from the backend with all values sent as a query string. Those values has to be sent back with the form.
 The AntiForgery Token has to be send in the form too.
