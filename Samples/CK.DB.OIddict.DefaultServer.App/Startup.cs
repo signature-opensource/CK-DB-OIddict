@@ -136,27 +136,21 @@ namespace CK.DB.OIddict.DefaultServer.App
             (
                 async ( context, next ) =>
                 {
-                    var authResult = await context.AuthenticateAsync( WebFrontAuthOptions.OnlyAuthenticationScheme );
+                    var tokens = antiForgery.GetAndStoreTokens( context );
 
-                    var isAuthenticated = authResult.Principal?.Identity is { IsAuthenticated: true };
-                    if( isAuthenticated )
+                    if( tokens.RequestToken != null )
                     {
-                        var tokens = antiForgery.GetAndStoreTokens( context );
-
-                        if( tokens.RequestToken != null )
-                        {
-                            context.Response.Cookies.Append
-                            (
-                                "AntiForgeryCookie",
-                                tokens.RequestToken,
-                                new CookieOptions
-                                {
-                                    HttpOnly = false,
-                                    Secure = true,
-                                    SameSite = SameSiteMode.Strict,
-                                }
-                            );
-                        }
+                        context.Response.Cookies.Append
+                        (
+                            "AntiForgeryCookie",
+                            tokens.RequestToken,
+                            new CookieOptions
+                            {
+                                HttpOnly = false, // let the front-end read this cookie to set a form or header value.
+                                Secure = true,
+                                SameSite = SameSiteMode.Strict,
+                            }
+                        );
                     }
 
                     await next.Invoke();
