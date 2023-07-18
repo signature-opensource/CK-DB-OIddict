@@ -10,8 +10,6 @@ using CK.AspNet.Auth;
 using CK.DB.AspNet.OIddict;
 using CK.DB.OIddict.Commands;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 
@@ -141,7 +139,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                     endpoints.MapGet
                     (
                         "/applications",
-                        async ( CommandAdapter<IApplicationsCommand, IApplicationsResult> commandAdapter ) =>
+                        async ( CommandAdapter<IGetApplicationsCommand, IGetApplicationsResult> commandAdapter ) =>
                         {
                             var result = await commandAdapter.HandleAsync( new ActivityMonitor() );
 

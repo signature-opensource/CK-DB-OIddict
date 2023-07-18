@@ -4,11 +4,9 @@ using System.Threading.Tasks;
 using CK.Core;
 using CK.DB.Actor;
 using CK.DB.Auth;
+using CK.DB.OIddict.Commands;
 using CK.SqlServer;
 using OpenIddict.Abstractions;
-using static OpenIddict.Abstractions.OpenIddictConstants.ConsentTypes;
-using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
-using static OpenIddict.Abstractions.OpenIddictConstants.Requirements;
 
 namespace CK.DB.OIddict.DefaultServer.App
 {
@@ -17,17 +15,20 @@ namespace CK.DB.OIddict.DefaultServer.App
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly UserTable _userTable;
         private readonly IAuthenticationDatabaseService _authenticationDatabaseService;
+        private readonly CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> _commandAdapter;
 
         public DefaultApplication
         (
             IOpenIddictApplicationManager applicationManager,
             UserTable userTable,
-            IAuthenticationDatabaseService authenticationDatabaseService
+            IAuthenticationDatabaseService authenticationDatabaseService,
+            CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> commandAdapter
         )
         {
             _applicationManager = applicationManager;
             _userTable = userTable;
             _authenticationDatabaseService = authenticationDatabaseService;
+            _commandAdapter = commandAdapter;
         }
 
         public async Task EnsureAllDefaultAsync()
@@ -38,85 +39,49 @@ namespace CK.DB.OIddict.DefaultServer.App
 
         private async Task EnsureDefaultApplicationAsync()
         {
-            var clientId = "ckdb-default-app";
-            var client = await _applicationManager.FindByClientIdAsync( clientId );
-            if( client != null )
-            {
-                return;
-            }
+            var app1Descriptor = new ApplicationDescriptorBuilder
+                                 (
+                                     "ckdb-default-app",
+                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                                 )
+                                 .WithDisplayName( "CK-DB Default application" )
+                                 .EnsureCodeDefaults()
+                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
+                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
+                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
+                                 .AddScope( "authinfo" )
+                                 .Build();
+            var app2Descriptor = new ApplicationDescriptorBuilder
+                                 (
+                                     "anOtherApp",
+                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                                 )
+                                 .WithDisplayName( "CK-DB Default application" )
+                                 .EnsureCodeDefaults()
+                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
+                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
+                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
+                                 .Build();
+            var app3Descriptor = new ApplicationDescriptorBuilder
+                                 (
+                                     "app3",
+                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                                 )
+                                 .WithDisplayName( "CK-DB Default application" )
+                                 .EnsureCodeDefaults()
+                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
+                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
+                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
+                                 .Build();
 
-            await _applicationManager.CreateAsync
-            (
-                new OpenIddictApplicationDescriptor
-                {
-                    ClientId = clientId,
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                    ConsentType = Explicit,
-                    DisplayName = "CK-DB Default application",
-                    RedirectUris =
-                    {
-                        new Uri( "https://localhost:7273/callback/login/local" ),
-                        new Uri( "https://oidcdebugger.com/debug" ),
-                        new Uri( "https://localhost:5044/signin-oidc" ),
-                    },
-                    PostLogoutRedirectUris =
-                    {
-                        new Uri( "https://localhost:7273/callback/logout/local" ),
-                    },
-                    Permissions =
-                    {
-                        Endpoints.Authorization,
-                        Endpoints.Logout,
-                        Endpoints.Token,
-                        GrantTypes.AuthorizationCode,
-                        ResponseTypes.Code,
-                        Scopes.Email,
-                        Scopes.Profile,
-                        Scopes.Roles,
-                        "scp:authinfo",
-                    },
-                    Requirements =
-                    {
-                        Features.ProofKeyForCodeExchange,
-                    },
-                }
-            );
+            var activityMonitor = new ActivityMonitor();
 
-            await _applicationManager.CreateAsync
-            (
-                new OpenIddictApplicationDescriptor
-                {
-                    ClientId = "anOtherApp",
-                    ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-                    ConsentType = Explicit,
-                    DisplayName = "CK-DB Default application",
-                    RedirectUris =
-                    {
-                        new Uri( "https://localhost:7273/callback/login/local" ),
-                        new Uri( "https://oidcdebugger.com/debug" ),
-                        new Uri( "https://localhost:5044/signin-oidc" ),
-                    },
-                    PostLogoutRedirectUris =
-                    {
-                        new Uri( "https://localhost:7273/callback/logout/local" ),
-                    },
-                    Permissions =
-                    {
-                        Endpoints.Authorization,
-                        Endpoints.Logout,
-                        Endpoints.Token,
-                        GrantTypes.AuthorizationCode,
-                        ResponseTypes.Code,
-                        Scopes.Email,
-                        Scopes.Profile,
-                        Scopes.Roles,
-                    },
-                    Requirements =
-                    {
-                        Features.ProofKeyForCodeExchange,
-                    },
-                }
-            );
+            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app1Descriptor );
+            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app2Descriptor );
+            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app3Descriptor );
         }
 
         public async Task<string> GetDefaultApplicationInfoAsync()

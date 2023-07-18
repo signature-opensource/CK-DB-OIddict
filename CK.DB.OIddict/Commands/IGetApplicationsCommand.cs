@@ -5,9 +5,9 @@ using CK.DB.OIddict.Entities;
 
 namespace CK.DB.OIddict.Commands
 {
-    public interface IApplicationsCommand : ICommand<IApplicationsResult> { }
+    public interface IGetApplicationsCommand : ICommand<IGetApplicationsResult> { }
 
-    public interface IApplicationsResult : IPoco
+    public interface IGetApplicationsResult : IPoco
     {
         List<Application> Applications { get; set; }
     }

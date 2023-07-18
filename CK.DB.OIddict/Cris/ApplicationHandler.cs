@@ -4,7 +4,6 @@ using CK.Core;
 using CK.Cris;
 using CK.DB.OIddict.Commands;
 using CK.DB.OIddict.Entities;
-using CK.SqlServer;
 using OpenIddict.Abstractions;
 
 namespace CK.DB.OIddict.Cris
@@ -12,10 +11,9 @@ namespace CK.DB.OIddict.Cris
     public class ApplicationHandler : IAutoService
     {
         [CommandHandler]
-        public async Task<IApplicationsResult> GetApplicationsAsync
+        public async Task<IGetApplicationsResult> GetApplicationsAsync
         (
-            ISqlCallContext sqlContext,
-            IApplicationsCommand command,
+            IGetApplicationsCommand command,
             PocoDirectory pocoDirectory,
             IOpenIddictApplicationManager applicationManager
         )
@@ -25,12 +23,32 @@ namespace CK.DB.OIddict.Cris
             await foreach( var application in applicationManager.ListAsync() )
                 applications.Add( (Application)application );
 
-            var applicationResult = pocoDirectory.Create<IApplicationsResult>
+            var applicationResult = pocoDirectory.Create<IGetApplicationsResult>
             (
                 r => r.Applications = applications
             );
 
             return applicationResult;
+        }
+
+        [CommandHandler]
+        public async Task<ISimpleCrisResult> CreateApplicationAsync
+        (
+            ICreateApplicationCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager
+        )
+        {
+            Throw.CheckNotNullArgument( command.Descriptor.ClientId );
+
+            var client = await applicationManager.FindByClientIdAsync( command.Descriptor.ClientId );
+
+            if( client != null )
+                return pocoDirectory.Failure( "Application already exists." );
+
+            await applicationManager.CreateAsync( command.Descriptor );
+
+            return pocoDirectory.Success();
         }
     }
 }
