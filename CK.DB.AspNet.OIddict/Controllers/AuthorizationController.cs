@@ -52,28 +52,6 @@ namespace CK.DB.AspNet.OIddict.Controllers
             _consentUrl = configuration.ConsentPath;
         }
 
-        // This could be a strategy pattern to avoid the if statement.
-        /// <summary>
-        /// Challenge adapter that handles standard Challenge and custom redirect.
-        /// </summary>
-        /// <param name="redirectUri">The uri that is passed as
-        /// <see cref="Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri"/>
-        /// to <see cref="AuthenticationProperties"/>.</param>
-        /// <returns>Challenge <see cref="_challengeScheme"/></returns>
-        private IActionResult HandleChallenge( string redirectUri )
-        {
-            if( _loginUrl is not null )
-                return Redirect
-                (
-                    $"{_loginUrl}{QueryString.Create( "ReturnUrl", redirectUri )}"
-                );
-
-            return Challenge
-            (
-                authenticationSchemes: _challengeScheme,
-                properties: new AuthenticationProperties { RedirectUri = redirectUri }
-            );
-        }
 
         [HttpGet( Constants.AuthorizeUri )]
         [HttpPost( Constants.AuthorizeUri )]
@@ -91,12 +69,11 @@ namespace CK.DB.AspNet.OIddict.Controllers
             //  - If a max_age parameter was provided and the authentication cookie is not considered "fresh" enough.
 
             var authResult = await HttpContext.AuthenticateAsync( _challengeScheme );
+            var user = authResult.Principal;
 
             #region Challenge
 
-            var isAuthenticated = authResult.Principal?.Identity != null
-                               && authResult.Principal           != null
-                               && authResult.Principal.Identity.IsAuthenticated;
+            var isAuthenticated = user?.Identity is { IsAuthenticated: true };
 
             var isAuthCookieStale =
             oidcRequest.MaxAge                                      != null
@@ -144,7 +121,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             #endregion
 
-            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( authResult.Principal );
+            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( user );
             if( authenticationInfo is null )
                 throw new InvalidOperationException( "The user details cannot be retrieved." );
             var userName = authenticationInfo.UserName;
@@ -265,13 +242,6 @@ namespace CK.DB.AspNet.OIddict.Controllers
                     return Redirect( consentUrl );
                 }
             }
-        }
-
-        public async Task<IActionResult> SimulateUserAcceptConsentAsync()
-        {
-            var result = await AcceptAsync();
-
-            return result;
         }
 
         [Authorize, FormValueRequired( "submit.Accept" )]
@@ -433,6 +403,29 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
             return SignIn( claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
+        }
+
+        // This could be a strategy pattern to avoid the if statement.
+        /// <summary>
+        /// Challenge adapter that handles standard Challenge and custom redirect.
+        /// </summary>
+        /// <param name="redirectUri">The uri that is passed as
+        /// <see cref="Microsoft.AspNetCore.Authentication.AuthenticationProperties.RedirectUri"/>
+        /// to <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>Challenge <see cref="_challengeScheme"/></returns>
+        private IActionResult HandleChallenge( string redirectUri )
+        {
+            if( _loginUrl is not null )
+                return Redirect
+                (
+                    $"{_loginUrl}{QueryString.Create( "ReturnUrl", redirectUri )}"
+                );
+
+            return Challenge
+            (
+                authenticationSchemes: _challengeScheme,
+                properties: new AuthenticationProperties { RedirectUri = redirectUri }
+            );
         }
 
         private static IEnumerable<string> GetDestinations( Claim claim )
