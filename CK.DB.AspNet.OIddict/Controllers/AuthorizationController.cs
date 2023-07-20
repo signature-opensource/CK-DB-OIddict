@@ -121,110 +121,36 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             #endregion
 
-            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( user );
-            if( authenticationInfo is null )
-                throw new InvalidOperationException( "The user details cannot be retrieved." );
-            var userName = authenticationInfo.UserName;
-
-            var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId! )
-                           ?? throw new InvalidOperationException
-                              (
-                                  "Details concerning the calling client application cannot be found."
-                              );
-
-            var scopes = oidcRequest.GetScopes();
-            // Retrieve the permanent authorizations associated with the user and the calling client application.
-            var authorizations = await _authorizationManager.FindAsync
-            (
-                subject: userName,
-                client: await _applicationManager.GetIdAsync( application ),
-                status: Statuses.Valid,
-                type: AuthorizationTypes.Permanent,
-                scopes: scopes
-            ).ToListAsync();
+            var (authenticationInfo, application, scopes, authorizations)
+            = await GetAuthenticationInfoAsync( user, oidcRequest );
 
             switch( await _applicationManager.GetConsentTypeAsync( application ) )
             {
                 // If the consent is external (e.g when authorizations are granted by a sysadmin),
                 // immediately return an error if no authorization can be found in the database.
                 case ConsentTypes.External when !authorizations.Any():
-                    return Forbid
-                    (
-                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        properties: new AuthenticationProperties
-                        (
-                            new Dictionary<string, string?>
-                            {
-                                [Error] = Errors.ConsentRequired,
-                                [ErrorDescription] =
-                                "The logged in user is not allowed to access this client application.",
-                            }
-                        )
-                    );
+                    return ForbidConsent();
 
                 // If the consent is implicit or if an authorization was found,
                 // return an authorization response without displaying the consent form.
                 case ConsentTypes.Implicit:
                 case ConsentTypes.External when authorizations.Any():
                 case ConsentTypes.Explicit when authorizations.Any() && !oidcRequest.HasPrompt( Prompts.Consent ):
-                    // Create the claims-based identity that will be used by OpenIddict to generate tokens.
-                    var identity = new ClaimsIdentity
+                    return await GenerateOpenIddictTokenAsync
                     (
-                        authenticationType: TokenValidationParameters.DefaultAuthenticationType,
-                        nameType: Claims.Name,
-                        roleType: Claims.Role
-                    );
-
-                    // Add the claims that will be persisted in the tokens.
-                    _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
-
-                    // Note: in this sample, the granted scopes match the requested scope
-                    // but you may want to allow the user to uncheck specific scopes.
-                    // For that, simply restrict the list of scopes before calling SetScopes.
-                    identity.SetScopes( scopes );
-                    // Uncomment next line when Scope Store is implemented
-                    // identity.SetResources( await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync() );
-
-                    // Automatically create a permanent authorization to avoid requiring explicit consent
-                    // for future authorization or token requests containing the same scopes.
-                    var authorization = authorizations.LastOrDefault();
-                    authorization ??= await _authorizationManager.CreateAsync
-                    (
-                        identity: identity,
-                        subject: userName,
-                        client: await _applicationManager.GetIdAsync( application ),
-                        type: AuthorizationTypes.Permanent,
-                        scopes: identity.GetScopes()
-                    );
-
-                    identity.SetAuthorizationId( await _authorizationManager.GetIdAsync( authorization ) );
-                    identity.SetDestinations( GetDestinations );
-
-                    return SignIn
-                    (
-                        new ClaimsPrincipal( identity ),
-                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                        authenticationInfo,
+                        scopes,
+                        authorizations,
+                        application
                     );
 
                 // At this point, no authorization was found in the database and an error must be returned
                 // if the client application specified prompt=none in the authorization request.
                 case ConsentTypes.Explicit when oidcRequest.HasPrompt( Prompts.None ):
                 case ConsentTypes.Systematic when oidcRequest.HasPrompt( Prompts.None ):
-                    return Forbid
-                    (
-                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        properties: new AuthenticationProperties
-                        (
-                            new Dictionary<string, string?>
-                            {
-                                [Error] = Errors.ConsentRequired,
-                                [ErrorDescription] = "Interactive user consent is required.",
-                            }
-                        )
-                    );
+                    return ForbidConsent( "Interactive user consent is required." );
 
                 default: // Redirect to the consent form
-                {
                     var prompt = string.Join( " ", oidcRequest.GetPrompts().Remove( Prompts.Login ) );
 
                     var parameters = Request.HasFormContentType
@@ -240,7 +166,6 @@ namespace CK.DB.AspNet.OIddict.Controllers
                     var consentUrl = _consentUrl + queryString;
 
                     return Redirect( consentUrl );
-                }
             }
         }
 
@@ -251,27 +176,8 @@ namespace CK.DB.AspNet.OIddict.Controllers
             var oidcRequest = HttpContext.GetOpenIddictServerRequest()
                            ?? throw new InvalidOperationException( "The OpenID Connect request cannot be retrieved." );
 
-            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( User );
-            if( authenticationInfo is null )
-                throw new InvalidOperationException( "The user details cannot be retrieved." );
-            var userName = authenticationInfo.UserName;
-
-            var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId )
-                           ?? throw new InvalidOperationException
-                              (
-                                  "Details concerning the calling client application cannot be found."
-                              );
-
-            var scopes = oidcRequest.GetScopes();
-            // Retrieve the permanent authorizations associated with the user and the calling client application.
-            var authorizations = await _authorizationManager.FindAsync
-            (
-                subject: userName,
-                client: await _applicationManager.GetIdAsync( application ),
-                status: Statuses.Valid,
-                type: AuthorizationTypes.Permanent,
-                scopes: scopes
-            ).ToListAsync();
+            var (authenticationInfo, application, scopes, authorizations)
+            = await GetAuthenticationInfoAsync( User, oidcRequest );
 
             // Note: the same check is already made in the other action but is repeated
             // here to ensure a malicious user can't abuse this POST-only endpoint and
@@ -281,56 +187,15 @@ namespace CK.DB.AspNet.OIddict.Controllers
                 !authorizations.Any()
              && await _applicationManager.HasConsentTypeAsync( application, ConsentTypes.External )
             )
-            {
-                return Forbid
-                (
-                    authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                    properties: new AuthenticationProperties
-                    (
-                        new Dictionary<string, string?>
-                        {
-                            [Error] = Errors.ConsentRequired,
-                            [ErrorDescription] = "The logged in user is not allowed to access this client application.",
-                        }
-                    )
-                );
-            }
+                return ForbidConsent();
 
-            // Create the claims-based identity that will be used by OpenIddict to generate tokens.
-            var identity = new ClaimsIdentity
+            return await GenerateOpenIddictTokenAsync
             (
-                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
-                nameType: Claims.Name,
-                roleType: Claims.Role
+                authenticationInfo,
+                scopes,
+                authorizations,
+                application
             );
-
-            // Add the claims that will be persisted in the tokens.
-            _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
-
-            // Note: in this sample, the granted scopes match the requested scope
-            // but you may want to allow the user to uncheck specific scopes.
-            // For that, simply restrict the list of scopes before calling SetScopes.
-            identity.SetScopes( scopes );
-            // Uncomment next line when Scope Store is implemented
-            // identity.SetResources(await _scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
-
-            // Automatically create a permanent authorization to avoid requiring explicit consent
-            // for future authorization or token requests containing the same scopes.
-            var authorization = authorizations.LastOrDefault();
-            authorization ??= await _authorizationManager.CreateAsync
-            (
-                identity: identity,
-                subject: userName,
-                client: await _applicationManager.GetIdAsync( application ),
-                type: AuthorizationTypes.Permanent,
-                scopes: identity.GetScopes()
-            );
-
-            identity.SetAuthorizationId( await _authorizationManager.GetIdAsync( authorization ) );
-            identity.SetDestinations( GetDestinations );
-
-            // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
-            return SignIn( new ClaimsPrincipal( identity ), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
         }
 
         [Authorize, FormValueRequired( "submit.Deny" )]
@@ -338,7 +203,6 @@ namespace CK.DB.AspNet.OIddict.Controllers
         // Notify OpenIddict that the authorization grant has been denied by the resource owner
         // to redirect the user agent to the client application using the appropriate response_mode.
         public IActionResult Deny() => Forbid( OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
-
 
         [HttpPost( Constants.TokenUri ), IgnoreAntiforgeryToken, Produces( "application/json" )]
         public async Task<IActionResult> ExchangeAsync()
@@ -349,7 +213,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
             if
             (
                 !oidcRequest.IsAuthorizationCodeGrantType()
-             && !oidcRequest.IsRefreshTokenGrantType()
+             // && !oidcRequest.IsRefreshTokenGrantType()
             )
                 throw new InvalidOperationException( "The specified grant type is not supported." );
 
@@ -403,6 +267,114 @@ namespace CK.DB.AspNet.OIddict.Controllers
 
             // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
             return SignIn( claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme );
+        }
+
+        private IActionResult ForbidConsent
+        (
+            string errorDescription = "The logged in user is not allowed to access this client application."
+        )
+        {
+            return Forbid
+            (
+                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                properties: new AuthenticationProperties
+                (
+                    new Dictionary<string, string?>
+                    {
+                        [Error] = Errors.ConsentRequired,
+                        [ErrorDescription] = errorDescription,
+                    }
+                )
+            );
+        }
+
+        private async Task<IActionResult> GenerateOpenIddictTokenAsync
+        (
+            AuthenticationInfo authenticationInfo,
+            ImmutableArray<string> scopes,
+            IEnumerable<object> authorizations,
+            object application
+        )
+        {
+            var userName = authenticationInfo.UserName;
+
+            // Create the claims-based identity that will be used by OpenIddict to generate tokens.
+            var identity = new ClaimsIdentity
+            (
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role
+            );
+
+            // Add the claims that will be persisted in the tokens.
+            _identityStrategy.SetUserClaims( identity, authenticationInfo, scopes );
+
+            // Note: in this sample, the granted scopes match the requested scope
+            // but you may want to allow the user to uncheck specific scopes.
+            // For that, simply restrict the list of scopes before calling SetScopes.
+            identity.SetScopes( scopes );
+            // Uncomment next line when Scope Store is implemented
+            // identity.SetResources( await _scopeManager.ListResourcesAsync( identity.GetScopes() ).ToListAsync() );
+
+            // Automatically create a permanent authorization to avoid requiring explicit consent
+            // for future authorization or token requests containing the same scopes.
+            var authorization = authorizations.LastOrDefault();
+            authorization ??= await _authorizationManager.CreateAsync
+            (
+                identity: identity,
+                subject: userName,
+                client: (await _applicationManager.GetIdAsync( application ))!,
+                type: AuthorizationTypes.Permanent,
+                scopes: identity.GetScopes()
+            );
+
+            identity.SetAuthorizationId( await _authorizationManager.GetIdAsync( authorization ) );
+            identity.SetDestinations( GetDestinations );
+
+            return SignIn
+            (
+                new ClaimsPrincipal( identity ),
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+            );
+        }
+
+        private async Task
+        <
+            (
+            AuthenticationInfo authenticationInfo,
+            object application,
+            ImmutableArray<string> scopes,
+            List<object> authorizations
+            )
+        >
+        GetAuthenticationInfoAsync
+        (
+            ClaimsPrincipal? user,
+            OpenIddictRequest oidcRequest
+        )
+        {
+            var authenticationInfo = await _identityStrategy.ValidateAuthAsync( user );
+            if( authenticationInfo is null )
+                throw new InvalidOperationException( "The user details cannot be retrieved." );
+
+            var application = await _applicationManager.FindByClientIdAsync( oidcRequest.ClientId! )
+                           ?? throw new InvalidOperationException
+                              (
+                                  "Details concerning the calling client application cannot be found."
+                              );
+
+            var scopes = oidcRequest.GetScopes();
+            // Retrieve the permanent authorizations associated with the user and the calling client application.
+            var authorizations = await _authorizationManager.FindAsync
+            (
+                subject: authenticationInfo.UserName,
+                client: (await _applicationManager.GetIdAsync( application ))!,
+                status: Statuses.Valid,
+                type: AuthorizationTypes.Permanent,
+                scopes: scopes
+            ).ToListAsync();
+
+            return (authenticationInfo, application, scopes, authorizations);
         }
 
         // This could be a strategy pattern to avoid the if statement.
