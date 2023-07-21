@@ -1,3 +1,4 @@
+using System;
 using Cake.Common.Diagnostics;
 using Cake.Common.Solution;
 using Cake.Common.Tools.DotNet;
@@ -35,6 +36,8 @@ namespace CodeCake
                 c.IncludeSymbols = true;
                 c.Configuration = _globalInfo.BuildInfo.BuildConfiguration;
                 c.OutputDirectory = _globalInfo.ReleasesFolder.Path;
+                if( _globalInfo.BuildInfo.BuildConfiguration.Equals( "debug", StringComparison.InvariantCultureIgnoreCase ) )
+                    c.IncludeSource = true;
             } );
             foreach( var p in nugetInfo.GetNuGetArtifacts() )
             {
