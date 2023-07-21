@@ -369,7 +369,7 @@ namespace CodeCake
                                                    .BuildConfiguration
                                                    .Equals( "debug", StringComparison.OrdinalIgnoreCase );
                     var fullPaths = isDebugBuild ? librariesFullPaths.Concat( symbolsFullPaths ) : librariesFullPaths;
- 
+
                     await updater.Push(
                         fullPaths.ToList(),
                         string.Empty, // no Symbol source.
