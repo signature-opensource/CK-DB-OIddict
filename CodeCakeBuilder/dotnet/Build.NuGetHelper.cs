@@ -238,7 +238,7 @@ namespace CodeCake
                 /// Initialize a new remote feed.
                 /// Its final <see cref="Name"/> is the one of the existing feed if it appears in the existing
                 /// sources (from NuGet configuration files) or "CCB-<paramref name="name"/>" if this is
-                /// an unexisting source (CCB is for CodeCakeBuilder). 
+                /// an unexisting source (CCB is for CodeCakeBuilder).
                 /// </summary>
                 /// <param name="type">The central NuGet handler.</param>
                 /// <param name="name">Name of the feed.</param>
@@ -268,7 +268,7 @@ namespace CodeCake
                 /// Initialize a new local feed.
                 /// Its final <see cref="Name"/> is the one of the existing feed if it appears in the existing
                 /// sources (from NuGet configuration files) or "CCB-GetDirectoryName(localPath)" if this is
-                /// an unexisting source (CCB is for CodeCakeBuilder). 
+                /// an unexisting source (CCB is for CodeCakeBuilder).
                 /// </summary>
                 /// <param name="type">The central NuGet handler.</param>
                 /// <param name="localPath">Local path.</param>
@@ -310,7 +310,7 @@ namespace CodeCake
                 /// <summary>
                 /// Gets the source name.
                 /// If the source appears in NuGet configuration files, it is the configured name of the source, otherwise
-                /// it is prefixed with "CCB-" (CCB is for CodeCakeBuilder). 
+                /// it is prefixed with "CCB-" (CCB is for CodeCakeBuilder).
                 /// </summary>
                 public override string Name => _packageSource.Name;
 
@@ -360,8 +360,15 @@ namespace CodeCake
                     Cake.Information( $"Pushing packages to '{Name}' => '{Url}'." );
                     var logger = InitializeAndGetLogger( Cake );
                     var updater = await _updater;
+
                     var names = pushes.Select( p => p.Name + "." + p.Version.WithBuildMetaData( null ).ToNormalizedString() );
-                    var fullPaths = names.Select( n => ArtifactType.GlobalInfo.ReleasesFolder.AppendPart( n + ".nupkg" ).ToString() );
+                    var librariesFullPaths = names.Select( n => ArtifactType.GlobalInfo.ReleasesFolder.AppendPart( n + ".nupkg" ).ToString() );
+                    var symbolsFullPaths = names.Select( n => ArtifactType.GlobalInfo.ReleasesFolder.AppendPart( n + ".symbols.nupkg" ).ToString() );
+
+                    var isDebugBuild = ArtifactType.GlobalInfo.BuildInfo
+                                                   .BuildConfiguration
+                                                   .Equals( "debug", StringComparison.OrdinalIgnoreCase );
+                    var fullPaths = isDebugBuild ? librariesFullPaths.Concat( symbolsFullPaths ) : librariesFullPaths;
 
                     await updater.Push(
                         fullPaths.ToList(),

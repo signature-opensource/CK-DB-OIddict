@@ -3,6 +3,7 @@
     <Branches>
       <Branch Name="develop" CIVersionMode="LastReleaseBased" VersionName="develop" />
       <Branch Name="master" CIVersionMode="LastReleaseBased" VersionName="master" />
+      <Branch Name="experiment" CIVersionMode="LastReleaseBased" VersionName="experiment" />
     </Branches>
   </SimpleGitVersion>
 </RepositoryInfo>
