@@ -1,4 +1,4 @@
-create table CK.tOpenIddictToken
+create table CK.tOIddictToken
 (
     TokenId         uniqueidentifier                               not null,
     ApplicationId   uniqueidentifier                               not null,
@@ -13,20 +13,20 @@ create table CK.tOpenIddictToken
     Subject         nvarchar(256) collate LATIN1_GENERAL_100_CI_AS not null,
     Type            nvarchar(22) collate LATIN1_GENERAL_100_BIN2,
 
-    constraint PK_OpenIddictToken primary key nonclustered (TokenId),
-    constraint FK_OpenIddictToken_OpenIddictApplication_ApplicationId
-        foreign key (ApplicationId) references CK.tOpenIddictApplication,
-    constraint FK_OpenIddictToken_OpenIddictAuthorization_AuthorizationId
-        foreign key (AuthorizationId) references CK.tOpenIddictAuthorization
+    constraint PK_OIddictToken primary key nonclustered (TokenId),
+    constraint FK_OIddictToken_OIddictApplication_ApplicationId
+        foreign key (ApplicationId) references CK.tOIddictApplication,
+    constraint FK_OIddictToken_OIddictAuthorization_AuthorizationId
+        foreign key (AuthorizationId) references CK.tOIddictAuthorization
 );
 
-create index IX_OpenIddictToken_ApplicationId_Status_Subject_Type
-    on CK.tOpenIddictToken (ApplicationId, Status, Subject, Type);
+create index IX_OpIddictToken_ApplicationId_Status_Subject_Type
+    on CK.tOIddictToken (ApplicationId, Status, Subject, Type);
 
-create index IX_OpenIddictToken_AuthorizationId
-    on CK.tOpenIddictToken (AuthorizationId);
+create index IX_OIddictToken_AuthorizationId
+    on CK.tOIddictToken (AuthorizationId);
 
-create unique index IX_OpenIddictToken_ReferenceId
-    on CK.tOpenIddictToken (ReferenceId)
+create unique index IX_OIddictToken_ReferenceId
+    on CK.tOIddictToken (ReferenceId)
     where ReferenceId is not null;
 

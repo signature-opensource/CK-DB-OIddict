@@ -20,9 +20,9 @@ namespace CK.DB.OIddict.Stores
     internal sealed class OIddictTokenStore : IOpenIddictTokenStore<Token>
     {
         private readonly ISqlCallContext _callContext;
-        private readonly OpenIddictTokenTable _tokenTable;
+        private readonly OIddictTokenTable _tokenTable;
 
-        public OIddictTokenStore( ISqlCallContext callContext, OpenIddictTokenTable tokenTable )
+        public OIddictTokenStore( ISqlCallContext callContext, OIddictTokenTable tokenTable )
         {
             _callContext = callContext;
             _tokenTable = tokenTable;
@@ -31,7 +31,7 @@ namespace CK.DB.OIddict.Stores
         /// <inheritdoc />
         public async ValueTask<long> CountAsync( CancellationToken cancellationToken )
         {
-            const string sql = "select count(*) from CK.tOpenIddictToken";
+            const string sql = "select count(*) from CK.tOIddictToken";
             var controller = _callContext[_tokenTable];
 
             return await controller.QuerySingleAsync<long>( sql );
@@ -59,7 +59,7 @@ select TokenId,
        Status,
        Subject,
        Type
-from CK.tOpenIddictToken
+from CK.tOIddictToken
 ";
             var controller = _callContext[_tokenTable];
 
@@ -83,7 +83,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token.Type );
 
             const string sql = @"
-insert into CK.tOpenIddictToken
+insert into CK.tOIddictToken
 (
     TokenId,
     ApplicationId,
@@ -146,7 +146,7 @@ values
             var controller = _callContext[_tokenTable];
 
             var sql = @"
-delete from CK.tOpenIddictToken
+delete from CK.tOIddictToken
 where TokenId = @TokenId;
 ";
             await controller.ExecuteAsync( sql, new { token.TokenId } );
@@ -179,7 +179,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.Subject = @subject
   and t.ApplicationId = @client;
 ";
@@ -225,7 +225,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.Subject = @subject
   and t.ApplicationId = @client
   and t.Status = @status;
@@ -274,7 +274,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.Subject = @subject
   and t.ApplicationId = @client
   and t.Status = @status
@@ -318,7 +318,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.ApplicationId = @ApplicationId
 ";
             var controller = _callContext[_tokenTable];
@@ -359,7 +359,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.AuthorizationId = @AuthorizationId
 ";
             var controller = _callContext[_tokenTable];
@@ -396,7 +396,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.TokenId = @TokenId
 ";
             var controller = _callContext[_tokenTable];
@@ -428,7 +428,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.ReferenceId = @ReferenceId
 ";
             var controller = _callContext[_tokenTable];
@@ -461,7 +461,7 @@ select
    t.Status,
    t.Subject,
    t.Type
-from CK.tOpenIddictToken t
+from CK.tOIddictToken t
 where t.Subject = @subject
 ";
             var controller = _callContext[_tokenTable];
@@ -621,7 +621,7 @@ select TokenId,
        Status,
        Subject,
        Type
-from CK.tOpenIddictToken
+from CK.tOIddictToken
 order by TokenId
 offset @offset rows
 {countSql};
@@ -665,7 +665,7 @@ select TokenId,
        Status,
        Subject,
        Type
-from CK.tOpenIddictToken
+from CK.tOIddictToken
 ";
             var controller = _callContext[_tokenTable];
 
@@ -834,7 +834,7 @@ from CK.tOpenIddictToken
             Throw.CheckNotNullArgument( token.TokenId );
 
             var sql = @"
-update CK.tOpenIddictToken
+update CK.tOIddictToken
 set ApplicationId = @ApplicationId,
     AuthorizationId = @AuthorizationId,
     CreationDate = @CreationDate,

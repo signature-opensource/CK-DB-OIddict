@@ -20,12 +20,12 @@ namespace CK.DB.OIddict.Stores
     internal sealed class OIddictAuthorizationStore : IOpenIddictAuthorizationStore<Authorization>
     {
         private readonly ISqlCallContext _callContext;
-        private readonly OpenIddictAuthorizationTable _authorizationTable;
+        private readonly OIddictAuthorizationTable _authorizationTable;
 
         public OIddictAuthorizationStore
         (
             ISqlCallContext callContext,
-            OpenIddictAuthorizationTable authorizationTable
+            OIddictAuthorizationTable authorizationTable
         )
         {
             _callContext = callContext;
@@ -35,7 +35,7 @@ namespace CK.DB.OIddict.Stores
         /// <inheritdoc />
         public async ValueTask<long> CountAsync( CancellationToken cancellationToken )
         {
-            const string sql = "select count(*) from CK.tOpenIddictAuthorization";
+            const string sql = "select count(*) from CK.tOIddictAuthorization";
             var controller = _callContext[_authorizationTable];
 
             return await controller.QuerySingleAsync<long>( sql );
@@ -60,7 +60,7 @@ select
     Status,
     Subject,
     Type
-from CK.tOpenIddictAuthorization
+from CK.tOIddictAuthorization
 ";
             var controller = _callContext[_authorizationTable];
 
@@ -82,7 +82,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Type );
 
             const string sql = @"
-insert into CK.tOpenIddictAuthorization
+insert into CK.tOIddictAuthorization
 (
     AuthorizationId,
     ApplicationId,
@@ -130,7 +130,7 @@ values
         {
             if( authorization == null ) throw new ArgumentNullException( nameof( authorization ) );
 
-            const string sql = @"    delete from CK.tOpenIddictAuthorization
+            const string sql = @"    delete from CK.tOIddictAuthorization
     where AuthorizationId = @AuthorizationId;
 ";
             var controller = _callContext[_authorizationTable];
@@ -160,7 +160,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.Subject = @subject
   and auth.ApplicationId = @client;
 ";
@@ -202,7 +202,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.Subject = @subject
   and auth.ApplicationId = @client
   and auth.Status = @status;
@@ -247,7 +247,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.Subject = @subject
   and auth.ApplicationId = @client
   and auth.Status = @status
@@ -301,7 +301,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 CROSS APPLY OpenJson(Scopes)
     WITH (scope NVARCHAR(max) '$')
 join JsonScopes js on js.requiredScope = scope
@@ -351,7 +351,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_authorizationTable];
@@ -384,7 +384,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.AuthorizationId = @AuthorizationId;
 ";
             var controller = _callContext[_authorizationTable];
@@ -416,7 +416,7 @@ select
     auth.Status,
     auth.Subject,
     auth.Type
-from CK.tOpenIddictAuthorization auth
+from CK.tOIddictAuthorization auth
 where auth.Subject = @subject;
 ";
             var controller = _callContext[_authorizationTable];
@@ -557,7 +557,7 @@ select AuthorizationId,
        Status,
        Subject,
        Type
-from CK.tOpenIddictAuthorization
+from CK.tOIddictAuthorization
 order by AuthorizationId
 offset @offset rows
 {countSql};
@@ -597,7 +597,7 @@ select AuthorizationId,
        Status,
        Subject,
        Type
-from CK.tOpenIddictAuthorization
+from CK.tOIddictAuthorization
 ";
             var controller = _callContext[_authorizationTable];
 
@@ -736,7 +736,7 @@ from CK.tOpenIddictAuthorization
             Throw.CheckNotNullArgument( authorization.AuthorizationId );
 
             const string sql = @"
-update CK.tOpenIddictAuthorization
+update CK.tOIddictAuthorization
 set
     ApplicationId = @ApplicationId,
     CreationDate = @CreationDate,

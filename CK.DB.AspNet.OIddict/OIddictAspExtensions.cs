@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CK.DB.AspNet.OIddict
 {
-    public static class OpenIddictAspExtensions
+    public static class OIddictAspExtensions
     {
         /// <summary>
         /// Add Authorization Code Flow and its endpoints.
@@ -17,7 +17,7 @@ namespace CK.DB.AspNet.OIddict
         /// Use it if the authenticationScheme does not support standard Challenge.</param>
         /// <param name="consentPath">Must be provided when using a flow that require user consent.</param>
         /// <returns></returns>
-        public static OpenIddictServerBuilder UseOpenIddictServerAsp
+        public static OpenIddictServerBuilder UseOIddictServerAsp
         (
             this OpenIddictServerBuilder builder,
             string authenticationScheme,

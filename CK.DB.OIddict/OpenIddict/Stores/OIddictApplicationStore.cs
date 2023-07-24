@@ -22,12 +22,12 @@ namespace CK.DB.OIddict.Stores
     internal sealed class OIddictApplicationStore : IOpenIddictApplicationStore<Application>
     {
         private readonly ISqlCallContext _callContext;
-        private readonly OpenIddictApplicationTable _applicationTable;
+        private readonly OIddictApplicationTable _applicationTable;
 
         public OIddictApplicationStore
         (
             ISqlCallContext callContext,
-            OpenIddictApplicationTable applicationTable
+            OIddictApplicationTable applicationTable
         )
         {
             _callContext = callContext;
@@ -37,7 +37,7 @@ namespace CK.DB.OIddict.Stores
         /// <inheritdoc />
         public async ValueTask<long> CountAsync( CancellationToken cancellationToken )
         {
-            const string sql = "select count(*) from CK.tOpenIddictApplication";
+            const string sql = "select count(*) from CK.tOIddictApplication";
             var controller = _callContext[_applicationTable];
 
             return await controller.QuerySingleAsync<long>( sql );
@@ -66,7 +66,7 @@ select
     RedirectUris,
     Requirements,
     Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 ";
             var controller = _callContext[_applicationTable];
 
@@ -88,7 +88,7 @@ from CK.tOpenIddictApplication
             Throw.CheckNotNullOrEmptyArgument( application.DisplayName );
 
             const string sql = @"
-insert into CK.tOpenIddictApplication
+insert into CK.tOIddictApplication
 (
     ApplicationId,
     ClientId,
@@ -151,7 +151,7 @@ values
             var controller = _callContext[_applicationTable];
 
             const string sql = @"
-delete from CK.tOpenIddictApplication
+delete from CK.tOIddictApplication
 where ApplicationId = @ApplicationId;
 ";
 
@@ -180,7 +180,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 where ApplicationId = @ApplicationId;
 ";
             var controller = _callContext[_applicationTable];
@@ -216,7 +216,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 where ClientId = @ClientId;
 ";
             var controller = _callContext[_applicationTable];
@@ -252,7 +252,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 where PostLogoutRedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 ";
 
@@ -293,7 +293,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
 ";
 
@@ -519,7 +519,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 order by ApplicationId
 offset @offset rows
 {countSql};
@@ -563,7 +563,7 @@ select ApplicationId,
        RedirectUris,
        Requirements,
        Type
-from CK.tOpenIddictApplication
+from CK.tOIddictApplication
 ";
             var controller = _callContext[_applicationTable];
 
@@ -755,7 +755,7 @@ from CK.tOpenIddictApplication
             Throw.CheckNotNullArgument( application.ApplicationId );
 
             const string sql = @"
-update CK.tOpenIddictApplication
+update CK.tOIddictApplication
 set
     ClientId = @ClientId,
     ClientSecret = @ClientSecret,

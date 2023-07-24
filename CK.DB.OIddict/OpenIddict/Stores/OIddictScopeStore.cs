@@ -20,12 +20,12 @@ namespace CK.DB.OIddict.Stores
     internal sealed class OIddictScopeStore : IOpenIddictScopeStore<Scope>
     {
         private readonly ISqlCallContext _callContext;
-        private readonly OpenIddictScopeTable _scopeTable;
+        private readonly OIddictScopeTable _scopeTable;
 
         public OIddictScopeStore
         (
             ISqlCallContext callContext,
-            OpenIddictScopeTable scopeTable
+            OIddictScopeTable scopeTable
         )
         {
             _callContext = callContext;
@@ -53,7 +53,7 @@ namespace CK.DB.OIddict.Stores
             Throw.CheckNotNullArgument( scope.ScopeName );
 
             const string sql = @"
-insert into CK.tOpenIddictScope
+insert into CK.tOIddictScope
 (
     ScopeId,
     Description,
@@ -102,7 +102,7 @@ values
             Throw.CheckNotNullArgument( scope );
 
             const string sql = @"
-delete from CK.tOpenIddictScope
+delete from CK.tOIddictScope
 where ScopeId = @ScopeId;";
 
             var controller = _callContext[_scopeTable];

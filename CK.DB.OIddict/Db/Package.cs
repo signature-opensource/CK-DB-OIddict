@@ -9,9 +9,9 @@ namespace CK.DB.OIddict.Db
     [Versions( "1.0.0" )]
     public class Package : SqlPackage
     {
-        [InjectObject] public OpenIddictApplicationTable OpenIddictApplicationTable { get; protected set; }
-        [InjectObject] public OpenIddictAuthorizationTable OpenIddictAuthorizationTable { get; protected set; }
-        [InjectObject] public OpenIddictScopeTable OpenIddictScopeTable { get; protected set; }
-        [InjectObject] public OpenIddictTokenTable OpenIddictTokenTable { get; protected set; }
+        [InjectObject] public OIddictApplicationTable OIddictApplicationTable { get; protected set; }
+        [InjectObject] public OIddictAuthorizationTable OIddictAuthorizationTable { get; protected set; }
+        [InjectObject] public OIddictScopeTable OIddictScopeTable { get; protected set; }
+        [InjectObject] public OIddictTokenTable OIddictTokenTable { get; protected set; }
     }
 }

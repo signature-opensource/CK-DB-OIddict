@@ -34,7 +34,7 @@ namespace CK.DB.OIddict.DefaultServer.App
         public void ConfigureServices( IServiceCollection services )
         {
             var connectionString =
-            "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
+            "Server=.;Database=CKOIddictDefault;Integrated Security=True;TrustServerCertificate=true";
 
             services.AddCKDatabase( _startupMonitor, Assembly.GetEntryAssembly()!, connectionString );
 
@@ -50,12 +50,12 @@ namespace CK.DB.OIddict.DefaultServer.App
                     );
 
             services.AddOpenIddict()
-                    .AddCore( builder => builder.UseOpenIddictCoreSql() )
+                    .AddCore( builder => builder.UseOIddictCoreSql() )
                     .AddServer
                     (
                         builder =>
                         {
-                            builder.UseOpenIddictServerAsp
+                            builder.UseOIddictServerAsp
                                    (
                                        WebFrontAuthOptions.OnlyAuthenticationScheme,
                                        "/",

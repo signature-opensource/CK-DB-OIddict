@@ -15,12 +15,12 @@ namespace CK.DB.OIddict
         public static IServiceCollection AddOIddict( this IServiceCollection services )
         {
             services.AddOpenIddict()
-                    .AddCore( builder => builder.UseOpenIddictCoreSql() );
+                    .AddCore( builder => builder.UseOIddictCoreSql() );
 
             return services;
         }
 
-        public static OpenIddictCoreBuilder UseOpenIddictCoreSql( this OpenIddictCoreBuilder builder )
+        public static OpenIddictCoreBuilder UseOIddictCoreSql( this OpenIddictCoreBuilder builder )
         {
             builder.SetDefaultApplicationEntity<Application>()
                    .SetDefaultAuthorizationEntity<Authorization>()

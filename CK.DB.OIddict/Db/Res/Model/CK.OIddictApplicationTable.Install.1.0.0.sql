@@ -1,6 +1,6 @@
 --[beginscript]
 
-create table CK.tOpenIddictApplication
+create table CK.tOIddictApplication
 (
     ApplicationId          uniqueidentifier                               not null,
     ClientId               nvarchar(255) collate LATIN1_GENERAL_100_CI_AS not null,
@@ -15,10 +15,10 @@ create table CK.tOpenIddictApplication
     Requirements           nvarchar(max) collate LATIN1_GENERAL_100_BIN2, -- determine size
     Type                   nvarchar(12) collate LATIN1_GENERAL_100_BIN2,
 
-    constraint PK_OpenIddictApplication primary key nonclustered (ApplicationId)
+    constraint PK_OIddictApplication primary key nonclustered (ApplicationId)
 );
 
-create unique nonclustered index IX_OpenIddictApplication_ClientId
-    on CK.tOpenIddictApplication (ClientId);
+create unique nonclustered index IX_OIddictApplication_ClientId
+    on CK.tOIddictApplication (ClientId);
 
 --[endscript]

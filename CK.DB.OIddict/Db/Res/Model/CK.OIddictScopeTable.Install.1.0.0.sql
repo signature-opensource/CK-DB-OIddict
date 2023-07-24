@@ -1,4 +1,4 @@
-create table CK.tOpenIddictScope
+create table CK.tOIddictScope
 (
     ScopeId      uniqueidentifier not null,
     Description  nvarchar(1024) collate LATIN1_GENERAL_100_BIN2,
@@ -9,8 +9,8 @@ create table CK.tOpenIddictScope
     Properties   nvarchar(max) collate LATIN1_GENERAL_100_BIN2, -- determine size
     Resources    nvarchar(max) collate LATIN1_GENERAL_100_BIN2, -- determine size,
 
-    constraint PK_OpenIddictScope primary key (ScopeId)
+    constraint PK_OIddictScope primary key (ScopeId)
 );
 
-create unique index IX_OpenIddictScope_ScopeName on CK.tOpenIddictScope (ScopeName);
+create unique index IX_OIddictScope_ScopeName on CK.tOIddictScope (ScopeName);
 
