@@ -44,7 +44,6 @@ namespace CK.DB.OIddict.DefaultServer.App
                     (
                         options =>
                         {
-                            //TODO: Let's see if AuthenticationCookieMode can be set to default.
                             options.CookieMode = AuthenticationCookieMode.RootPath;
                             options.AuthCookieName = ".oidcServerWebFront";
                         }
