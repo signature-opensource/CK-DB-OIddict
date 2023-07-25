@@ -64,8 +64,13 @@ from CK.tOIddictAuthorization
 ";
             var controller = _callContext[_authorizationTable];
 
-            var applications = await controller.QueryAsync<Authorization>( sql, cancellationToken: cancellationToken );
-            var result = query.Invoke( applications.AsQueryable() );
+            var applications = await controller.QueryAsync<AuthorizationDbModel>
+            (
+                sql,
+                cancellationToken: cancellationToken
+            );
+            var queryable = applications.Select( FromDbModel ).AsQueryable();
+            var result = query.Invoke( queryable! );
 
             return result.Count();
         }

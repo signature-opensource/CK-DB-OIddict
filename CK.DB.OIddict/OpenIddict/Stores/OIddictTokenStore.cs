@@ -63,8 +63,9 @@ from CK.tOIddictToken
 ";
             var controller = _callContext[_tokenTable];
 
-            var tokens = await controller.QueryAsync<Token>( sql, cancellationToken: cancellationToken );
-            var result = query.Invoke( tokens.AsQueryable() );
+            var tokens = await controller.QueryAsync<TokenDbModel>( sql, cancellationToken: cancellationToken );
+            var queryable = tokens.Select( FromDbModel ).AsQueryable();
+            var result = query.Invoke( queryable! );
 
             return result.Count();
         }

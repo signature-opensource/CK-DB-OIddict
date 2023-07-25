@@ -70,8 +70,13 @@ from CK.tOIddictApplication
 ";
             var controller = _callContext[_applicationTable];
 
-            var applications = await controller.QueryAsync<Application>( sql, cancellationToken: cancellationToken );
-            var result = query.Invoke( applications.AsQueryable() );
+            var applications = await controller.QueryAsync<ApplicationDbModel>
+            (
+                sql,
+                cancellationToken: cancellationToken
+            );
+            var queryable = applications.Select( FromDbModel ).AsQueryable();
+            var result = query.Invoke( queryable! );
 
             return result.Count();
         }
