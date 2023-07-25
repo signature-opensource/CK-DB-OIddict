@@ -6,7 +6,7 @@ create table CK.tOIddictAuthorization
     Properties      nvarchar(max) collate LATIN1_GENERAL_100_BIN2, -- determine size
     Scopes          nvarchar(max) collate LATIN1_GENERAL_100_BIN2, -- determine size
     Status          nvarchar(8) collate LATIN1_GENERAL_100_BIN2    not null,
-    Subject         nvarchar(256) collate LATIN1_GENERAL_100_CI_AS not null,
+    Subject         int not null,
     Type            nvarchar(9) collate LATIN1_GENERAL_100_BIN2    not null,
 
     constraint PK_OIddictAuthorization primary key nonclustered (AuthorizationId),

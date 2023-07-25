@@ -54,7 +54,7 @@ namespace CK.DB.OIddict.Entities
         public string? Status { get; set; }
 
         /// <summary>Gets or sets the subject associated with the token.</summary>
-        public string? Subject { get; set; }
+        public int? Subject { get; set; }
 
         /// <summary>Gets or sets the token type.</summary>
         public string? Type { get; set; }
@@ -95,7 +95,7 @@ namespace CK.DB.OIddict.Entities
         public DateTimeUtc? RedemptionDate { get; init; }
         public string? ReferenceId { get; init; }
         public string? Status { get; init; }
-        public string? Subject { get; init; }
+        public int? Subject { get; init; }
         public string? Type { get; init; }
     }
 }

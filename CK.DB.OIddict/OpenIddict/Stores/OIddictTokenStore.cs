@@ -125,7 +125,7 @@ values
                     token.TokenId,
                     token.ApplicationId,
                     token.AuthorizationId,
-                    CreationDate = token.CreationDate.Value.UtcDateTime, //todo: date
+                    CreationDate = token.CreationDate.Value.UtcDateTime,
                     ExpirationDate = token.ExpirationDate.Value.UtcDateTime,
                     token.Payload,
                     Properties = ToJson( token.Properties ),
@@ -188,7 +188,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ) },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ) },
                 cancellationToken: cancellationToken
             );
 
@@ -235,7 +235,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ), status },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ), status },
                 cancellationToken: cancellationToken
             );
 
@@ -285,7 +285,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ), status, type },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ), status, type },
                 cancellationToken: cancellationToken
             );
 
@@ -469,7 +469,7 @@ where t.Subject = @subject
             var tokens = await controller.QueryAsync<TokenDbModel>
             (
                 sql,
-                new { subject },
+                new { subject = int.Parse( subject ) },
                 cancellationToken: cancellationToken
             );
 
@@ -582,7 +582,7 @@ where t.Subject = @subject
         {
             Throw.CheckNotNullArgument( token );
 
-            return ValueTask.FromResult( token.Subject );
+            return ValueTask.FromResult( token.Subject is null ? null : token.Subject.ToString() );
         }
 
         /// <inheritdoc />
@@ -810,7 +810,7 @@ from CK.tOIddictToken
         {
             Throw.CheckNotNullArgument( token );
 
-            token.Subject = subject;
+            token.Subject = subject == null ? null : int.Parse( subject );
 
             return ValueTask.CompletedTask;
         }

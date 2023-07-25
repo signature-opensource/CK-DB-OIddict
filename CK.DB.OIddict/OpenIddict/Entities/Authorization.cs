@@ -36,7 +36,7 @@ namespace CK.DB.OIddict.Entities
         /// <summary>
         /// Gets or sets the subject associated with the authorization.
         /// </summary>
-        public string? Subject { get; set; }
+        public int? Subject { get; set; }
 
         /// <summary>Gets or sets the type of the authorization.</summary>
         public string? Type { get; set; }
@@ -69,7 +69,7 @@ namespace CK.DB.OIddict.Entities
         public string? Properties { get; init; }
         public string? Scopes { get; init; }
         public string? Status { get; init; }
-        public string? Subject { get; init; }
+        public int? Subject { get; init; }
         public string? Type { get; init; }
     }
 }

@@ -78,7 +78,7 @@ from CK.tOIddictAuthorization
             Throw.CheckNotNullArgument( authorization.CreationDate );
             Throw.CheckNotNullArgument( authorization.ApplicationId );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Status );
-            Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Subject );
+            Throw.CheckNotNullArgument( authorization.Subject );
             Throw.CheckNotNullOrWhiteSpaceArgument( authorization.Type );
 
             const string sql = @"
@@ -169,7 +169,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ) },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ) },
                 cancellationToken: cancellationToken
             );
 
@@ -212,7 +212,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ), status },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ), status },
                 cancellationToken: cancellationToken
             );
 
@@ -258,7 +258,7 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ), status, type },
+                new { subject = int.Parse( subject ), client = Guid.Parse( client ), status, type },
                 cancellationToken: cancellationToken
             );
 
@@ -322,7 +322,14 @@ where auth.Subject = @subject
             var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
-                new { subject, client = Guid.Parse( client ), status, type, scopes = ToJson( scopes.ToHashSet() ) },
+                new
+                {
+                    subject = int.Parse( subject ),
+                    client = Guid.Parse( client ),
+                    status,
+                    type,
+                    scopes = ToJson( scopes.ToHashSet() ),
+                },
                 cancellationToken: cancellationToken
             );
 
@@ -424,7 +431,7 @@ where auth.Subject = @subject;
             var authorizations = await controller.QueryAsync<AuthorizationDbModel>
             (
                 sql,
-                new { subject },
+                new { subject = int.Parse( subject ) },
                 cancellationToken: cancellationToken
             );
 
@@ -519,7 +526,7 @@ where auth.Subject = @subject;
         {
             Throw.CheckNotNullArgument( authorization );
 
-            return ValueTask.FromResult( authorization.Subject );
+            return ValueTask.FromResult( authorization.Subject is null ? null : authorization.Subject.ToString() );
         }
 
         /// <inheritdoc />
@@ -707,7 +714,7 @@ from CK.tOIddictAuthorization
         {
             Throw.CheckNotNullArgument( authorization );
 
-            authorization.Subject = subject;
+            authorization.Subject = subject == null ? null : int.Parse( subject );
 
             return ValueTask.CompletedTask;
         }

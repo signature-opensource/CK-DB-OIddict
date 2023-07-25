@@ -24,7 +24,7 @@ namespace CK.DB.OIddict.Tests
 
             var clientId = nameof( requesting_two_scopes_exact_match_in_any_order_should_not_throw_Async );
             var applicationId = (await _applicationTestHelper.ForceCreateApplicationAsync( clientId )).ApplicationId;
-            var subject = "aymeric";
+            var subject = "4";
             var client = applicationId.ToString();
             var status = "valid";
             var type = "permanent";
@@ -75,7 +75,7 @@ namespace CK.DB.OIddict.Tests
 
             var clientId = nameof( can_request_a_superset_of_scopes_Async );
             var applicationId = (await _applicationTestHelper.ForceCreateApplicationAsync( clientId )).ApplicationId;
-            var subject = "aymeric";
+            var subject = "4";
             var client = applicationId.ToString();
             var status = "valid";
             var type = "permanent";

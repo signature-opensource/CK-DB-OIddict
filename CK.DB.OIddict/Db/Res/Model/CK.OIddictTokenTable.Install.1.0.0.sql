@@ -10,7 +10,7 @@ create table CK.tOIddictToken
     RedemptionDate  datetime2(2),
     ReferenceId     nvarchar(255) collate LATIN1_GENERAL_100_BIN2,
     Status          nvarchar(8) collate LATIN1_GENERAL_100_BIN2,
-    Subject         nvarchar(256) collate LATIN1_GENERAL_100_CI_AS not null,
+    Subject         int not null,
     Type            nvarchar(22) collate LATIN1_GENERAL_100_BIN2,
 
     constraint PK_OIddictToken primary key nonclustered (TokenId),

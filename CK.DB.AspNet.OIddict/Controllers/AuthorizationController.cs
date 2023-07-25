@@ -296,8 +296,6 @@ namespace CK.DB.AspNet.OIddict.Controllers
             object application
         )
         {
-            var userName = authenticationInfo.UserName;
-
             // Create the claims-based identity that will be used by OpenIddict to generate tokens.
             var identity = new ClaimsIdentity
             (
@@ -322,7 +320,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
             authorization ??= await _authorizationManager.CreateAsync
             (
                 identity: identity,
-                subject: userName,
+                subject: authenticationInfo.UserId.ToString(),
                 client: (await _applicationManager.GetIdAsync( application ))!,
                 type: AuthorizationTypes.Permanent,
                 scopes: identity.GetScopes()
@@ -367,7 +365,7 @@ namespace CK.DB.AspNet.OIddict.Controllers
             // Retrieve the permanent authorizations associated with the user and the calling client application.
             var authorizations = await _authorizationManager.FindAsync
             (
-                subject: authenticationInfo.UserName,
+                subject: authenticationInfo.UserId.ToString(),
                 client: (await _applicationManager.GetIdAsync( application ))!,
                 status: Statuses.Valid,
                 type: AuthorizationTypes.Permanent,
