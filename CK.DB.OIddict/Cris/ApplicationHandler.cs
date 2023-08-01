@@ -79,5 +79,37 @@ namespace CK.DB.OIddict.Cris
 
             return pocoDirectory.Success();
         }
+
+        [CommandHandler]
+        public async Task<ISimpleCrisResult> UpdateApplicationAsync
+        (
+            IUpdateApplicationCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager,
+            ApplicationPocoFactory applicationPocoFactory,
+            IActivityMonitor monitor
+        )
+        {
+            Throw.CheckNotNullArgument( command.ApplicationPoco.ClientId );
+
+            var client = await applicationManager.FindByClientIdAsync( command.ApplicationPoco.ClientId );
+
+            if( client is null )
+                return pocoDirectory.Failure( "Application not found." );
+
+            var application = applicationPocoFactory.Create( command.ApplicationPoco );
+
+            try
+            {
+                await applicationManager.UpdateAsync( application );
+            }
+            catch( Exception e )
+            {
+                monitor.Error( e );
+                return pocoDirectory.Failure( "Internal error, see logs for details." );
+            }
+
+            return pocoDirectory.Success();
+        }
     }
 }

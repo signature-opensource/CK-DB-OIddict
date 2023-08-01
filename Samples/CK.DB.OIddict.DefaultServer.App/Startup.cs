@@ -145,6 +145,33 @@ namespace CK.DB.OIddict.DefaultServer.App
                             );
                         }
                     );
+                    endpoints.MapGet
+                    (
+                        $"update",
+                        async
+                        (
+                            string? clientId,
+                            CommandAdapter<IUpdateApplicationCommand, ISimpleCrisResult> updateCommandAdapter,
+                            CommandAdapter<IGetApplicationCommand, IApplicationPoco> getCommandAdapter
+                        ) =>
+                        {
+                            clientId ??= "ckdb-default-app";
+                            var pocoGetAppResult = await getCommandAdapter.HandleAsync
+                            (
+                                new ActivityMonitor(),
+                                i => i.ClientId = clientId
+                            );
+
+                            pocoGetAppResult!.DisplayName += " updated";
+
+                            var updateResult = await updateCommandAdapter.HandleAsync
+                            (
+                                new ActivityMonitor(),
+                                i => i.ApplicationPoco = pocoGetAppResult
+                            );
+
+                            return updateResult;
+                        }
                     );
                     endpoints.MapGet
                     (
