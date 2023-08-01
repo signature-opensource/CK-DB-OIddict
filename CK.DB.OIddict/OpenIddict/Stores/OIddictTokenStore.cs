@@ -599,7 +599,7 @@ where t.Subject = @subject
         /// <inheritdoc />
         public ValueTask<Token> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return ValueTask.FromResult( new Token { TokenId = Guid.NewGuid() } );
+            return ValueTask.FromResult( new Token ());
         }
 
         /// <inheritdoc />

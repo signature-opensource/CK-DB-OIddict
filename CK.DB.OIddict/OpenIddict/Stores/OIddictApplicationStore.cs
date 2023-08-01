@@ -492,12 +492,7 @@ where RedirectUris like concat('%', @uri, '%') collate Latin1_General_100_CI_AS;
         /// <inheritdoc />
         public ValueTask<Application> InstantiateAsync( CancellationToken cancellationToken )
         {
-            var application = new Application
-            {
-                ApplicationId = Guid.NewGuid(),
-            };
-
-            return ValueTask.FromResult( application );
+            return ValueTask.FromResult( new Application() );
         }
 
         /// <inheritdoc />

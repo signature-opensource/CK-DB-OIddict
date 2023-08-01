@@ -547,7 +547,7 @@ where auth.Subject = @subject;
         /// <inheritdoc />
         public ValueTask<Authorization> InstantiateAsync( CancellationToken cancellationToken )
         {
-            return ValueTask.FromResult( new Authorization { AuthorizationId = Guid.NewGuid() } );
+            return ValueTask.FromResult( new Authorization () );
         }
 
         /// <inheritdoc />

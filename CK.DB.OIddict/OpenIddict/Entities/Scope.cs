@@ -8,7 +8,7 @@ namespace CK.DB.OIddict.Entities
 {
     public class Scope
     {
-        public Guid ScopeId { get; init; }
+        public Guid ScopeId { get; init; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets or sets the description associated with the scope.

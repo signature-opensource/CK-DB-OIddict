@@ -8,7 +8,7 @@ namespace CK.DB.OIddict.Entities
 {
     public class Application
     {
-        public Guid ApplicationId { get; init; }
+        public Guid ApplicationId { get; init; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets or sets the client identifier associated with the application.
@@ -43,19 +43,16 @@ namespace CK.DB.OIddict.Entities
         /// <summary>
         /// Gets the post-logout redirect URIs associated with the application.
         /// </summary>
-
         public HashSet<Uri>? PostLogoutRedirectUris { get; set; }
 
         /// <summary>
         /// Gets the additional properties associated with the application.
         /// </summary>
-
         public Dictionary<string, JsonElement>? Properties { get; set; }
 
         /// <summary>
         /// Gets the redirect URIs associated with the application.
         /// </summary>
-
         public HashSet<Uri>? RedirectUris { get; set; }
 
         /// <summary>

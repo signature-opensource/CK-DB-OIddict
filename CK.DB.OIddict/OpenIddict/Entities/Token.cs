@@ -8,7 +8,7 @@ namespace CK.DB.OIddict.Entities
 {
     public class Token
     {
-        public Guid TokenId { get; init; }
+        public Guid TokenId { get; init; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets or sets the application identifier associated with the token.

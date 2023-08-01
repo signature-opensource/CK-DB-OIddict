@@ -8,7 +8,7 @@ namespace CK.DB.OIddict.Entities
 {
     public class Authorization
     {
-        public Guid AuthorizationId { get; init; }
+        public Guid AuthorizationId { get; init; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets or sets the application identifier associated with the authorization.
