@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CK.Core;
@@ -16,19 +17,22 @@ namespace CK.DB.OIddict.DefaultServer.App
         private readonly UserTable _userTable;
         private readonly IAuthenticationDatabaseService _authenticationDatabaseService;
         private readonly CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> _commandAdapter;
+        private readonly PocoDirectory _pocoDirectory;
 
         public DefaultApplication
         (
             IOpenIddictApplicationManager applicationManager,
             UserTable userTable,
             IAuthenticationDatabaseService authenticationDatabaseService,
-            CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> commandAdapter
+            CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> commandAdapter,
+            PocoDirectory pocoDirectory
         )
         {
             _applicationManager = applicationManager;
             _userTable = userTable;
             _authenticationDatabaseService = authenticationDatabaseService;
             _commandAdapter = commandAdapter;
+            _pocoDirectory = pocoDirectory;
         }
 
         public async Task EnsureAllDefaultAsync()
@@ -79,9 +83,51 @@ namespace CK.DB.OIddict.DefaultServer.App
 
             var activityMonitor = new ActivityMonitor();
 
-            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app1Descriptor );
-            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app2Descriptor );
-            await _commandAdapter.HandleAsync( activityMonitor, command => command.Descriptor = app3Descriptor );
+            var app1Poco = _pocoDirectory.Create<IApplicationPoco>
+            (
+                ap =>
+                {
+                    ap.ClientId = "ckdb-default-app";
+                    ap.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
+                    ap.ConsentType = OpenIddictConstants.ConsentTypes.Explicit;
+                    ap.DisplayName = "CK-DB Default application";
+                    ap.RedirectUris = new HashSet<IUriPoco>
+                    {
+                        _pocoDirectory.Create<IUriPoco>( up => up.Uri = "https://localhost:7273/callback/login/local" ),
+                        _pocoDirectory.Create<IUriPoco>( up => up.Uri = "https://localhost:5044/signin-oidc" ),
+                    };
+                    ap.PostLogoutRedirectUris = new HashSet<IUriPoco>
+                    {
+                        _pocoDirectory.Create<IUriPoco>
+                        (
+                            up => up.Uri = "https://localhost:7273/callback/logout/local"
+                        ),
+                    };
+                    ap.Permissions = new HashSet<string>
+                    {
+                        OpenIddictConstants.Permissions.Endpoints.Authorization,
+                        OpenIddictConstants.Permissions.Endpoints.Logout,
+                        OpenIddictConstants.Permissions.Endpoints.Token,
+                        OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                        OpenIddictConstants.Permissions.ResponseTypes.Code,
+                        OpenIddictConstants.Permissions.Scopes.Email,
+                        OpenIddictConstants.Permissions.Scopes.Profile,
+                        OpenIddictConstants.Permissions.Scopes.Roles,
+                        $"{OpenIddictConstants.Permissions.Prefixes.Scope}authinfo",
+                    };
+                    ap.Requirements = new HashSet<string>
+                    {
+                        OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange,
+                    };
+                }
+            );
+
+
+            await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app1Poco );
+            // await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app2Descriptor );
+            if( await _applicationManager.FindByClientIdAsync( app2Descriptor.ClientId! ) == null )
+                await _applicationManager.CreateAsync( app2Descriptor );
+            // await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app3Descriptor );
         }
 
         public async Task<string> GetDefaultApplicationInfoAsync()

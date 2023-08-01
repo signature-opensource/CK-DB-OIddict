@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="cksetup-generated\" />
     <Folder Include="Pages\" />
   </ItemGroup>
 

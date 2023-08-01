@@ -15,13 +15,18 @@ namespace CK.DB.OIddict.Cris
         (
             IGetApplicationsCommand command,
             PocoDirectory pocoDirectory,
-            IOpenIddictApplicationManager applicationManager
+            IOpenIddictApplicationManager applicationManager,
+            ApplicationPocoFactory applicationPocoFactory
         )
         {
-            var applications = new List<Application>();
+            var applications = new List<IApplicationPoco>();
 
-            await foreach( var application in applicationManager.ListAsync() )
-                applications.Add( (Application)application );
+            await foreach( var applicationBoxed in applicationManager.ListAsync() )
+            {
+                var applicationPoco = applicationPocoFactory.CreatePoco( (Application)applicationBoxed );
+
+                applications.Add( applicationPoco );
+            }
 
             var applicationResult = pocoDirectory.Create<IGetApplicationsResult>
             (
@@ -36,17 +41,20 @@ namespace CK.DB.OIddict.Cris
         (
             ICreateApplicationCommand command,
             PocoDirectory pocoDirectory,
-            IOpenIddictApplicationManager applicationManager
+            IOpenIddictApplicationManager applicationManager,
+            ApplicationPocoFactory applicationPocoFactory
         )
         {
-            Throw.CheckNotNullArgument( command.Descriptor.ClientId );
+            Throw.CheckNotNullArgument( command.ApplicationPoco.ClientId );
 
-            var client = await applicationManager.FindByClientIdAsync( command.Descriptor.ClientId );
+            var client = await applicationManager.FindByClientIdAsync( command.ApplicationPoco.ClientId );
 
             if( client != null )
                 return pocoDirectory.Failure( "Application already exists." );
 
-            await applicationManager.CreateAsync( command.Descriptor );
+            var application = applicationPocoFactory.CreateDescriptor( command.ApplicationPoco );
+
+            await applicationManager.CreateAsync( application );
 
             return pocoDirectory.Success();
         }

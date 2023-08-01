@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using CK.Core;
 using CK.Cris;
-using CK.DB.OIddict.Entities;
 
 namespace CK.DB.OIddict.Commands
 {
@@ -9,6 +8,6 @@ namespace CK.DB.OIddict.Commands
 
     public interface IGetApplicationsResult : IPoco
     {
-        List<Application> Applications { get; set; }
+        List<IApplicationPoco> Applications { get; set; }
     }
 }

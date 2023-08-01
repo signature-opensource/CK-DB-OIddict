@@ -12,6 +12,9 @@
   <BinPaths>
     <BinPath Path="../CK.DB.OIddict.DefaultServer.App/bin/[Debug|Release]/net6.0">
       <ProjectPath>../CK.DB.OIddict.DefaultServer.WebHost</ProjectPath>
+      <TypeScript>
+        <OutputPath>../CK.DB.OIddict.DefaultServer.App/cksetup-generated</OutputPath>
+      </TypeScript>
     </BinPath>
 
   </BinPaths>
