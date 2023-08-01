@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Cris;
@@ -34,6 +35,26 @@ namespace CK.DB.OIddict.Cris
             );
 
             return applicationResult;
+        }
+
+        [CommandHandler]
+        public async Task<IApplicationPoco> GetApplicationAsync
+        (
+            IGetApplicationCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager,
+            ApplicationPocoFactory applicationPocoFactory
+        )
+        {
+            var applicationBoxed = await applicationManager.FindByClientIdAsync( command.ClientId );
+
+            if( applicationBoxed is null ) return pocoDirectory.Create<IApplicationPoco>();
+
+            var application = (Application)applicationBoxed;
+
+            var poco = applicationPocoFactory.CreatePoco( application );
+
+            return poco;
         }
 
         [CommandHandler]

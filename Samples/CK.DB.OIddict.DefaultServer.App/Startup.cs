@@ -129,11 +129,22 @@ namespace CK.DB.OIddict.DefaultServer.App
                     endpoints.MapControllers();
                     // endpoints.MapRazorPages();
 
-                    // endpoints.MapGet( "/", () => "CK.DB.OIddict.DefaultServer " );
                     endpoints.MapGet
                     (
-                        "/appinfo",
-                        ( DefaultApplication defaultApplication ) => defaultApplication.GetDefaultApplicationInfoAsync()
+                        "getApp",
+                        async
+                        (
+                            string clientId,
+                            CommandAdapter<IGetApplicationCommand, IApplicationPoco> getCommandAdapter
+                        ) =>
+                        {
+                            return await getCommandAdapter.HandleAsync
+                            (
+                                new ActivityMonitor(),
+                                i => i.ClientId = clientId
+                            );
+                        }
+                    );
                     );
                     endpoints.MapGet
                     (
