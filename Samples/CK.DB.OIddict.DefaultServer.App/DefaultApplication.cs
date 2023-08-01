@@ -130,25 +130,6 @@ namespace CK.DB.OIddict.DefaultServer.App
             // await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app3Descriptor );
         }
 
-        public async Task<string> GetDefaultApplicationInfoAsync()
-        {
-            var clientId = "ckdb-default-app";
-            var client = (await _applicationManager.FindByClientIdAsync( clientId )) as OpenIddictApplicationDescriptor;
-
-            var result = $@"
-ClientId : {client?.ClientId}
-ClientSecret : {client?.ClientSecret}
-Permissions : {client?.Permissions.Select( c => c ).Concatenate( " " )}
-Requirements : {client?.Requirements.Select( c => c ).Concatenate( " " )}
-ConsentType : {client?.ConsentType}
-DisplayName : {client?.DisplayName}
-Properties : {client?.Properties.Select( c => $"{c.Key}{c.Value.ToString()}" ).Concatenate( " " )}
-RedirectUris : {client?.RedirectUris.Select( c => c.ToString() ).Concatenate( " " )}
-PostLogoutRedirectUris : {client?.PostLogoutRedirectUris.Select( c => c.ToString() ).Concatenate( " " )}
-";
-            return result;
-        }
-
         private async Task EnsureDefaultUserAsync()
         {
             using var context = new SqlStandardCallContext();
