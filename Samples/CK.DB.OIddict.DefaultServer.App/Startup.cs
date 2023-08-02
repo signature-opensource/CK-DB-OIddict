@@ -150,7 +150,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                         async
                         (
                             string? clientId,
-                            CommandAdapter<IUpdateApplicationCommand, ISimpleCrisResult> updateCommandAdapter,
+                            CommandAdapter<IHardUpdateApplicationCommand, ISimpleCrisResult> updateCommandAdapter,
                             CommandAdapter<IGetApplicationCommand, IApplicationPoco> getCommandAdapter
                         ) =>
                         {
