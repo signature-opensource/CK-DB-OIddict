@@ -16,7 +16,9 @@ namespace CK.DB.OIddict.DefaultServer.App
         private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly UserTable _userTable;
         private readonly IAuthenticationDatabaseService _authenticationDatabaseService;
-        private readonly CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> _commandAdapter;
+        private readonly CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> _createAppCommandAdapter;
+        private readonly CommandAdapter<ICreateCodeFlowApplicationCommand, ISimpleCrisResult> _createCodeCommandAdapter;
+
         private readonly PocoDirectory _pocoDirectory;
 
         public DefaultApplication
@@ -24,14 +26,16 @@ namespace CK.DB.OIddict.DefaultServer.App
             IOpenIddictApplicationManager applicationManager,
             UserTable userTable,
             IAuthenticationDatabaseService authenticationDatabaseService,
-            CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> commandAdapter,
+            CommandAdapter<ICreateApplicationCommand, ISimpleCrisResult> createAppCommandAdapter,
+            CommandAdapter<ICreateCodeFlowApplicationCommand, ISimpleCrisResult> createCodeCommandAdapter,
             PocoDirectory pocoDirectory
         )
         {
             _applicationManager = applicationManager;
             _userTable = userTable;
             _authenticationDatabaseService = authenticationDatabaseService;
-            _commandAdapter = commandAdapter;
+            _createAppCommandAdapter = createAppCommandAdapter;
+            _createCodeCommandAdapter = createCodeCommandAdapter;
             _pocoDirectory = pocoDirectory;
         }
 
@@ -43,47 +47,9 @@ namespace CK.DB.OIddict.DefaultServer.App
 
         private async Task EnsureDefaultApplicationAsync()
         {
-            var app1Descriptor = new ApplicationDescriptorBuilder
-                                 (
-                                     "ckdb-default-app",
-                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
-                                 )
-                                 .WithDisplayName( "CK-DB Default application" )
-                                 .EnsureCodeDefaults()
-                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
-                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
-                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
-                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
-                                 .AddScope( "authinfo" )
-                                 .Build();
-            var app2Descriptor = new ApplicationDescriptorBuilder
-                                 (
-                                     "anOtherApp",
-                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
-                                 )
-                                 .WithDisplayName( "CK-DB Default application" )
-                                 .EnsureCodeDefaults()
-                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
-                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
-                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
-                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
-                                 .Build();
-            var app3Descriptor = new ApplicationDescriptorBuilder
-                                 (
-                                     "app3",
-                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
-                                 )
-                                 .WithDisplayName( "CK-DB Default application" )
-                                 .EnsureCodeDefaults()
-                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
-                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
-                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
-                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
-                                 .Build();
-
             var activityMonitor = new ActivityMonitor();
 
-            var app1Poco = _pocoDirectory.Create<IApplicationPoco>
+            var appPoco = _pocoDirectory.Create<IApplicationPoco>
             (
                 ap =>
                 {
@@ -122,12 +88,40 @@ namespace CK.DB.OIddict.DefaultServer.App
                 }
             );
 
+            await _createAppCommandAdapter.HandleAsync
+            (
+                activityMonitor,
+                command => command.ApplicationPoco = appPoco
+            );
 
-            await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app1Poco );
-            // await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app2Descriptor );
-            if( await _applicationManager.FindByClientIdAsync( app2Descriptor.ClientId! ) == null )
-                await _applicationManager.CreateAsync( app2Descriptor );
-            // await _commandAdapter.HandleAsync( activityMonitor, command => command.ApplicationPoco = app3Descriptor );
+            await _createCodeCommandAdapter.HandleAsync
+            (
+                activityMonitor,
+                command =>
+                {
+                    command.ClientId = "ckdb-code-flow-easy";
+                    command.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
+                    command.DisplayName = "My code flow app";
+                    command.RedirectUri = _pocoDirectory
+                    .Create<IUriPoco>( up => up.Uri = "https://localhost:5044/signin-oidc" );
+                }
+            );
+
+            var appDescriptor = new ApplicationDescriptorBuilder
+                                 (
+                                     "anOtherApp",
+                                     "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                                 )
+                                 .WithDisplayName( "CK-DB Default application" )
+                                 .EnsureCodeDefaults()
+                                 .AddRedirectUri( new Uri( "https://localhost:7273/callback/login/local" ) )
+                                 .AddRedirectUri( new Uri( "https://oidcdebugger.com/debug" ) )
+                                 .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                                 .AddPostLogoutRedirectUri( new Uri( "https://localhost:7273/callback/logout/local" ) )
+                                 .Build();
+
+            if( await _applicationManager.FindByClientIdAsync( appDescriptor.ClientId! ) == null )
+                await _applicationManager.CreateAsync( appDescriptor );
         }
 
         private async Task EnsureDefaultUserAsync()

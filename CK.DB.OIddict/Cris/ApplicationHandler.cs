@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Cris;
@@ -17,7 +18,8 @@ namespace CK.DB.OIddict.Cris
             IGetApplicationsCommand command,
             PocoDirectory pocoDirectory,
             IOpenIddictApplicationManager applicationManager,
-            ApplicationPocoFactory applicationPocoFactory
+            ApplicationPocoFactory applicationPocoFactory,
+            IActivityMonitor monitor
         )
         {
             var applications = new List<IApplicationPoco>();
@@ -63,7 +65,8 @@ namespace CK.DB.OIddict.Cris
             ICreateApplicationCommand command,
             PocoDirectory pocoDirectory,
             IOpenIddictApplicationManager applicationManager,
-            ApplicationPocoFactory applicationPocoFactory
+            ApplicationPocoFactory applicationPocoFactory,
+            IActivityMonitor monitor
         )
         {
             Throw.CheckNotNullArgument( command.ApplicationPoco.ClientId );
@@ -75,9 +78,50 @@ namespace CK.DB.OIddict.Cris
 
             var application = applicationPocoFactory.CreateDescriptor( command.ApplicationPoco );
 
-            await applicationManager.CreateAsync( application );
+            return await TryCatchLogAsync
+            (
+                pocoDirectory,
+                async () => await applicationManager.CreateAsync( application ),
+                monitor
+            );
+        }
 
-            return pocoDirectory.Success();
+        [CommandHandler]
+        public async Task<ISimpleCrisResult> CreateCodeFlowApplicationAsync
+        (
+            ICreateCodeFlowApplicationCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager,
+            ApplicationPocoFactory applicationPocoFactory,
+            IActivityMonitor monitor
+        )
+        {
+            var client = await applicationManager.FindByClientIdAsync( command.ClientId );
+
+            if( client != null ) return pocoDirectory.Failure( "Application already exists." );
+
+            var builder = new ApplicationDescriptorBuilder( command.ClientId, command.ClientSecret )
+                          .WithDisplayName( command.DisplayName )
+                          .EnsureCodeDefaults()
+                          .AddRedirectUri( applicationPocoFactory.CreateUri( command.RedirectUri ) );
+            if( command.Scope is not null ) builder.AddScope( command.Scope );
+            if( command.PostLogoutRedirectUris is not null )
+                foreach( var uri in command.PostLogoutRedirectUris )
+                    builder.AddPostLogoutRedirectUri( applicationPocoFactory.CreateUri( uri ) );
+            if( command.RedirectUris is not null )
+                foreach( var uri in command.RedirectUris )
+                    builder.AddRedirectUri( applicationPocoFactory.CreateUri( uri ) );
+
+            if( command.Scope is not null ) builder.AddScope( command.Scope );
+
+            var descriptor = builder.Build();
+
+            return await TryCatchLogAsync
+            (
+                pocoDirectory,
+                async () => await applicationManager.CreateAsync( descriptor ),
+                monitor
+            );
         }
 
         [CommandHandler]
@@ -99,14 +143,29 @@ namespace CK.DB.OIddict.Cris
 
             var application = applicationPocoFactory.Create( command.ApplicationPoco );
 
+            return await TryCatchLogAsync
+            (
+                pocoDirectory,
+                async () => await applicationManager.UpdateAsync( application ),
+                monitor
+            );
+        }
+
+        private async Task<ISimpleCrisResult> TryCatchLogAsync
+        (
+            PocoDirectory pocoDirectory,
+            Func<Task> action,
+            IActivityMonitor monitor
+        )
+        {
             try
             {
-                await applicationManager.UpdateAsync( application );
+                await action.Invoke();
             }
             catch( Exception e )
             {
                 monitor.Error( e );
-                return pocoDirectory.Failure( "Internal error, see logs for details." );
+                return pocoDirectory.Failure( $"Internal error, see logs for details. UTC now: {DateTime.UtcNow}." );
             }
 
             return pocoDirectory.Success();

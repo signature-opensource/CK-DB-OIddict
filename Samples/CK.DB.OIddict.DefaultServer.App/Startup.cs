@@ -12,7 +12,6 @@ using CK.DB.OIddict.Commands;
 using Microsoft.AspNetCore.Antiforgery;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
-
 namespace CK.DB.OIddict.DefaultServer.App
 {
     public class Startup

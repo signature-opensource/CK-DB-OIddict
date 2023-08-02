@@ -1,8 +1,9 @@
 ﻿using CK.Cris;
 
-namespace CK.DB.OIddict.Commands;
-
-public interface IGetApplicationCommand : ICommand<IApplicationPoco>
+namespace CK.DB.OIddict.Commands
 {
-    string ClientId { get; set; }
+    public interface IGetApplicationCommand : ICommand<IApplicationPoco>
+    {
+        string ClientId { get; set; }
+    }
 }

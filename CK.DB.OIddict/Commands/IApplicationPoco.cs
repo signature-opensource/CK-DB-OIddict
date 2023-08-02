@@ -111,7 +111,7 @@ namespace CK.DB.OIddict.Commands
         );
 
         public Application Create( IApplicationPoco poco )
-        {
+        {//TODO: maybe it has to have an ApplicationId
             var app = poco.ApplicationId is not null
             ? new Application() { ApplicationId = poco.ApplicationId.Value }
             : new Application();
@@ -182,15 +182,15 @@ namespace CK.DB.OIddict.Commands
             return app;
         }
 
-        private ICultureInfoPoco CreateCultureInfoPoco( CultureInfo cultureInfo )
+        internal ICultureInfoPoco CreateCultureInfoPoco( CultureInfo cultureInfo )
             => _pocoDirectory.Create<ICultureInfoPoco>
             (
                 p => p.CultureName = cultureInfo.Name
             );
 
-        private CultureInfo CreateCultureInfo( ICultureInfoPoco poco ) => new( poco.CultureName );
+        internal CultureInfo CreateCultureInfo( ICultureInfoPoco poco ) => new( poco.CultureName );
 
-        private Dictionary<ICultureInfoPoco, string>? CreateDisplayNamesPoco
+        internal Dictionary<ICultureInfoPoco, string>? CreateDisplayNamesPoco
         (
             Dictionary<CultureInfo, string>? displayNames
         )
@@ -200,25 +200,25 @@ namespace CK.DB.OIddict.Commands
                 d => d.Value
             );
 
-        private Dictionary<CultureInfo, string>? CreateDisplayNames( Dictionary<ICultureInfoPoco, string>? poco )
+        internal Dictionary<CultureInfo, string>? CreateDisplayNames( Dictionary<ICultureInfoPoco, string>? poco )
             => poco?.ToDictionary
             (
                 p => CreateCultureInfo( p.Key ),
                 p => p.Value
             );
 
-        private IUriPoco CreateUriPoco( Uri uri ) => _pocoDirectory.Create<IUriPoco>( p => p.Uri = uri.ToString() );
+        internal IUriPoco CreateUriPoco( Uri uri ) => _pocoDirectory.Create<IUriPoco>( p => p.Uri = uri.ToString() );
 
-        private Uri CreateUri( IUriPoco poco ) => new( poco.Uri );
+        internal Uri CreateUri( IUriPoco poco ) => new( poco.Uri );
 
-        private HashSet<IUriPoco>? CreateUrisPoco( HashSet<Uri>? uris ) => uris?.Select( CreateUriPoco ).ToHashSet();
+        internal HashSet<IUriPoco>? CreateUrisPoco( HashSet<Uri>? uris ) => uris?.Select( CreateUriPoco ).ToHashSet();
 
-        private HashSet<Uri>? CreateUris( HashSet<IUriPoco>? poco ) => poco?.Select( CreateUri ).ToHashSet();
+        internal HashSet<Uri>? CreateUris( HashSet<IUriPoco>? poco ) => poco?.Select( CreateUri ).ToHashSet();
 
-        private Dictionary<string, JsonElement>? CreateProperties( IPropertiesPoco? poco )
+        internal Dictionary<string, JsonElement>? CreateProperties( IPropertiesPoco? poco )
             => FromJson<Dictionary<string, JsonElement>>( poco?.PropertiesJson );
 
-        private IPropertiesPoco CreatePropertiesPoco( Dictionary<string, JsonElement>? properties )
+        internal IPropertiesPoco CreatePropertiesPoco( Dictionary<string, JsonElement>? properties )
             => _pocoDirectory.Create<IPropertiesPoco>( p => p.PropertiesJson = ToJson( properties ) );
     }
 }
