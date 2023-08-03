@@ -47,7 +47,11 @@ namespace CK.DB.OIddict.Cris
             ApplicationPocoFactory applicationPocoFactory
         )
         {
-            var applicationBoxed = await applicationManager.FindByClientIdAsync( command.ClientId );
+            object? applicationBoxed = null;
+            if (command.ApplicationId is not null)
+                applicationBoxed = await applicationManager.FindByIdAsync( command.ApplicationId.Value.ToString() );
+            else if (command.ClientId is not null)
+                applicationBoxed = await applicationManager.FindByClientIdAsync( command.ClientId );
 
             if( applicationBoxed is null ) return pocoDirectory.Create<IApplicationPoco>();
 

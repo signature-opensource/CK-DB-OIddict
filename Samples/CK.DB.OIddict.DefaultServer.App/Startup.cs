@@ -148,20 +148,25 @@ namespace CK.DB.OIddict.DefaultServer.App
                         "getApp",
                         async
                         (
-                            string clientId,
+                            string? clientId,
+                            string? applicationId,
                             CommandAdapter<IGetApplicationCommand, IApplicationPoco> getCommandAdapter
                         ) =>
                         {
                             return await getCommandAdapter.HandleAsync
                             (
                                 new ActivityMonitor(),
-                                i => i.ClientId = clientId
+                                i =>
+                                {
+                                    i.ClientId = clientId;
+                                    i.ApplicationId = applicationId is null ? null : Guid.Parse( applicationId );
+                                }
                             );
                         }
                     );
                     endpoints.MapGet
                     (
-                        $"update",
+                        "update",
                         async
                         (
                             string? clientId,
