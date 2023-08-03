@@ -9,7 +9,9 @@ using System.Reflection;
 using CK.AspNet.Auth;
 using CK.DB.AspNet.OIddict;
 using CK.DB.OIddict.Commands;
+using CK.DB.OIddict.Entities;
 using Microsoft.AspNetCore.Antiforgery;
+using OpenIddict.Core;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace CK.DB.OIddict.DefaultServer.App
@@ -127,6 +129,20 @@ namespace CK.DB.OIddict.DefaultServer.App
                 {
                     endpoints.MapControllers();
                     // endpoints.MapRazorPages();
+                    endpoints.MapGet
+                    (
+                        "prune",
+                        async (
+                            OpenIddictTokenManager<Token> tokenManger,
+                            OpenIddictAuthorizationManager<Authorization> authorizationManager
+                        ) =>
+                        {
+                            await tokenManger.PruneAsync( DateTimeOffset.UtcNow );
+                            await authorizationManager.PruneAsync( DateTimeOffset.UtcNow );
+
+                            return "pruned !";
+                        }
+                    );
                     endpoints.MapGet
                     (
                         "deleteApp",

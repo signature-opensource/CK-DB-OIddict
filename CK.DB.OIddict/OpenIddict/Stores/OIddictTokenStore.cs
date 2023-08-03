@@ -14,6 +14,7 @@ using Dapper;
 using OpenIddict.Abstractions;
 using static CK.DB.OIddict.Dapper.JsonTypeConverter;
 using static CK.DB.OIddict.Entities.Token;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace CK.DB.OIddict.Stores
 {
@@ -684,9 +685,24 @@ from CK.tOIddictToken
         }
 
         /// <inheritdoc />
-        public ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
+        public async ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            var controller = _callContext[_tokenTable];
+
+            var sql = $@"
+delete t
+from CK.tOIddictToken t
+left join CK.tOIddictAuthorization a on a.AuthorizationId = t.AuthorizationId
+where t.CreationDate < @threshold
+    and
+    (
+        (t.Status not in ('{Statuses.Inactive}', '{Statuses.Valid}'))
+     or  (a.Status is not null and a.Status != '{Statuses.Valid}')
+     or  t.ExpirationDate < GetUtcDate()
+    )
+";
+
+            await controller.ExecuteAsync( sql, new { threshold } );
         }
 
         #region Set

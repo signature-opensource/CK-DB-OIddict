@@ -627,9 +627,23 @@ from CK.tOIddictAuthorization
         }
 
         /// <inheritdoc />
-        public ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
+        public async ValueTask PruneAsync( DateTimeOffset threshold, CancellationToken cancellationToken )
         {
-            throw new NotImplementedException();
+            const string sql = $@"
+delete a
+from CK.tOIddictAuthorization a
+left join CK.tOIddictToken t on a.AuthorizationId = t.AuthorizationId
+where
+    a.CreationDate < @threshold
+    and
+    (
+        a.Status != '{OpenIddictConstants.Statuses.Valid}'
+     or a.Type = '{OpenIddictConstants.AuthorizationTypes.AdHoc}'
+    )
+    and t.TokenId is null;
+";
+            var controller = _callContext[_authorizationTable];
+            await controller.ExecuteAsync( sql, new { threshold } );
         }
 
         #region Set
