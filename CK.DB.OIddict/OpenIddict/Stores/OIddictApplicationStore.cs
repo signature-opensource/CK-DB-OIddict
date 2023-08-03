@@ -156,6 +156,10 @@ values
             var controller = _callContext[_applicationTable];
 
             const string sql = @"
+delete from CK.tOIddictToken
+where ApplicationId = @ApplicationId;
+delete from CK.tOIddictAuthorization
+where ApplicationId = @ApplicationId;
 delete from CK.tOIddictApplication
 where ApplicationId = @ApplicationId;
 ";

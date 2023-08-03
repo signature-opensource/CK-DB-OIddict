@@ -127,7 +127,22 @@ namespace CK.DB.OIddict.DefaultServer.App
                 {
                     endpoints.MapControllers();
                     // endpoints.MapRazorPages();
-
+                    endpoints.MapGet
+                    (
+                        "deleteApp",
+                        async
+                        (
+                            string applicationId,
+                            CommandAdapter<IDestroyApplicationCommand, ISimpleCrisResult> commandAdapter
+                        ) =>
+                        {
+                            return await commandAdapter.HandleAsync
+                            (
+                                new ActivityMonitor(),
+                                command => command.ApplicationId = Guid.Parse( applicationId )
+                            );
+                        }
+                    );
                     endpoints.MapGet
                     (
                         "getApp",

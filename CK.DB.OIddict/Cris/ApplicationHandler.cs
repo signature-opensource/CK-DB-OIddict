@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using CK.Core;
 using CK.Cris;
@@ -203,7 +202,6 @@ namespace CK.DB.OIddict.Cris
             IUpdateApplicationNameCommand command,
             PocoDirectory pocoDirectory,
             IOpenIddictApplicationManager applicationManager,
-            ApplicationPocoFactory applicationPocoFactory,
             IActivityMonitor monitor
         )
         {
@@ -223,11 +221,37 @@ namespace CK.DB.OIddict.Cris
             );
         }
 
+        [CommandHandler]
+        public async Task<ISimpleCrisResult> DestroyApplicationAsync
+        (
+            IDestroyApplicationCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager,
+            IActivityMonitor monitor
+        )
+        {
+            var client = await applicationManager.FindByIdAsync( command.ApplicationId.ToString() );
+
+            if( client is null )
+                return pocoDirectory.Failure( "Application not found." );
+
+            var application = (Application)client;
+
+            return await TryCatchLogAsync
+            (
+                pocoDirectory,
+                async () => await applicationManager.DeleteAsync( application ),
+                monitor,
+                $"Application {application.ApplicationId} with clientId {application.ClientId} deleted."
+            );
+        }
+
         private async Task<ISimpleCrisResult> TryCatchLogAsync
         (
             PocoDirectory pocoDirectory,
             Func<Task> action,
-            IActivityMonitor monitor
+            IActivityMonitor monitor,
+            string? successMessage = null
         )
         {
             try
@@ -239,6 +263,8 @@ namespace CK.DB.OIddict.Cris
                 monitor.Error( e );
                 return pocoDirectory.Failure( $"Internal error, see logs for details. UTC now: {DateTime.UtcNow}." );
             }
+
+            if (successMessage is not null) monitor.Info( successMessage );
 
             return pocoDirectory.Success();
         }
