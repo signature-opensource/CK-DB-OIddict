@@ -147,14 +147,22 @@ namespace CK.DB.OIddict.Cris
             if( client is null )
                 return pocoDirectory.Failure( "Application not found." );
 
+            var previousValues = (Application)client;
+
             var application = applicationPocoFactory.Create( command.ApplicationPoco );
+
+            var shouldUpdateSecret = application.ClientSecret is not null
+                                  && application.ClientSecret != previousValues.ClientSecret;
 
             return await TryCatchLogAsync
             (
                 pocoDirectory,
-                async () => await applicationManager.UpdateAsync( application ),
+                shouldUpdateSecret ? UpdateSecret : Update,
                 monitor
             );
+
+            async Task Update() => await applicationManager.UpdateAsync( application );
+            async Task UpdateSecret() => await applicationManager.UpdateAsync( application, application.ClientSecret! );
         }
 
         [CommandHandler]
@@ -181,9 +189,9 @@ namespace CK.DB.OIddict.Cris
             var previousValues = (Application)client;
 
             application.ClientId ??= previousValues.ClientId;
-            application.ClientSecret ??= previousValues.ClientSecret;
             application.ConsentType ??= previousValues.ConsentType;
             application.DisplayName ??= previousValues.DisplayName;
+            application.Type ??= previousValues.Type;
 
             application.DisplayNames = MergeCollections( application.DisplayNames, previousValues.DisplayNames );
             application.Permissions = MergeCollections( application.Permissions, previousValues.Permissions );
@@ -192,15 +200,20 @@ namespace CK.DB.OIddict.Cris
             application.RedirectUris = MergeCollections( application.RedirectUris, previousValues.RedirectUris );
             application.Requirements = MergeCollections( application.Requirements, previousValues.Requirements );
 
+            var shouldUpdateSecret = application.ClientSecret is not null
+                                  && application.ClientSecret != previousValues.ClientSecret;
 
-            application.Type ??= previousValues.Type;
+            if( shouldUpdateSecret is false ) application.ClientSecret = previousValues.ClientSecret;
 
             return await TryCatchLogAsync
             (
                 pocoDirectory,
-                async () => await applicationManager.UpdateAsync( application ),
+                shouldUpdateSecret ? UpdateSecret : Update,
                 monitor
             );
+
+            async Task Update() => await applicationManager.UpdateAsync( application );
+            async Task UpdateSecret() => await applicationManager.UpdateAsync( application, application.ClientSecret! );
         }
 
         private static HashSet<T>? MergeCollections<T>( HashSet<T>? destination, HashSet<T>? source )
@@ -223,7 +236,7 @@ namespace CK.DB.OIddict.Cris
 
             foreach( var (key, value) in source )
             {
-                destination[ key] = value;
+                destination[key] = value;
             }
 
             return destination;
