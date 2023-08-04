@@ -193,12 +193,14 @@ namespace CK.DB.OIddict.Cris
             application.DisplayName ??= previousValues.DisplayName;
             application.Type ??= previousValues.Type;
 
+            // @formatter:off
             application.DisplayNames = MergeCollections( application.DisplayNames, previousValues.DisplayNames );
             application.Permissions = MergeCollections( application.Permissions, previousValues.Permissions );
             application.PostLogoutRedirectUris = MergeCollections( application.PostLogoutRedirectUris, previousValues.PostLogoutRedirectUris );
             application.Properties = MergeCollections( application.Properties, previousValues.Properties );
             application.RedirectUris = MergeCollections( application.RedirectUris, previousValues.RedirectUris );
             application.Requirements = MergeCollections( application.Requirements, previousValues.Requirements );
+            // @formatter:on
 
             var shouldUpdateSecret = application.ClientSecret is not null
                                   && application.ClientSecret != previousValues.ClientSecret;
@@ -229,7 +231,11 @@ namespace CK.DB.OIddict.Cris
             return destination;
         }
 
-        private static Dictionary<TKey, TValue>? MergeCollections<TKey, TValue>( Dictionary<TKey, TValue>? destination, Dictionary<TKey, TValue>? source ) where TKey : notnull
+        private static Dictionary<TKey, TValue>? MergeCollections<TKey, TValue>
+        (
+            Dictionary<TKey, TValue>? destination,
+            Dictionary<TKey, TValue>? source
+        ) where TKey : notnull
         {
             if( destination is null ) return source;
             if( source is null ) return destination;
