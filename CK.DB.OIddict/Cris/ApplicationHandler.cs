@@ -48,9 +48,9 @@ namespace CK.DB.OIddict.Cris
         )
         {
             object? applicationBoxed = null;
-            if (command.ApplicationId is not null)
+            if( command.ApplicationId is not null )
                 applicationBoxed = await applicationManager.FindByIdAsync( command.ApplicationId.Value.ToString() );
-            else if (command.ClientId is not null)
+            else if( command.ClientId is not null )
                 applicationBoxed = await applicationManager.FindByClientIdAsync( command.ClientId );
 
             if( applicationBoxed is null ) return pocoDirectory.Create<IApplicationPoco>();
@@ -184,12 +184,15 @@ namespace CK.DB.OIddict.Cris
             application.ClientSecret ??= previousValues.ClientSecret;
             application.ConsentType ??= previousValues.ConsentType;
             application.DisplayName ??= previousValues.DisplayName;
-            application.DisplayNames ??= previousValues.DisplayNames;
-            application.Permissions ??= previousValues.Permissions;
-            application.PostLogoutRedirectUris ??= previousValues.PostLogoutRedirectUris;
-            application.Properties ??= previousValues.Properties;
-            application.RedirectUris ??= previousValues.RedirectUris;
-            application.Requirements ??= previousValues.Requirements;
+
+            application.DisplayNames = MergeCollections( application.DisplayNames, previousValues.DisplayNames );
+            application.Permissions = MergeCollections( application.Permissions, previousValues.Permissions );
+            application.PostLogoutRedirectUris = MergeCollections( application.PostLogoutRedirectUris, previousValues.PostLogoutRedirectUris );
+            application.Properties = MergeCollections( application.Properties, previousValues.Properties );
+            application.RedirectUris = MergeCollections( application.RedirectUris, previousValues.RedirectUris );
+            application.Requirements = MergeCollections( application.Requirements, previousValues.Requirements );
+
+
             application.Type ??= previousValues.Type;
 
             return await TryCatchLogAsync
@@ -198,6 +201,32 @@ namespace CK.DB.OIddict.Cris
                 async () => await applicationManager.UpdateAsync( application ),
                 monitor
             );
+        }
+
+        private static HashSet<T>? MergeCollections<T>( HashSet<T>? destination, HashSet<T>? source )
+        {
+            if( destination is null ) return source;
+            if( source is null ) return destination;
+
+            foreach( var s in source )
+            {
+                destination.Add( s );
+            }
+
+            return destination;
+        }
+
+        private static Dictionary<TKey, TValue>? MergeCollections<TKey, TValue>( Dictionary<TKey, TValue>? destination, Dictionary<TKey, TValue>? source ) where TKey : notnull
+        {
+            if( destination is null ) return source;
+            if( source is null ) return destination;
+
+            foreach( var (key, value) in source )
+            {
+                destination[ key] = value;
+            }
+
+            return destination;
         }
 
         [CommandHandler]
@@ -268,7 +297,7 @@ namespace CK.DB.OIddict.Cris
                 return pocoDirectory.Failure( $"Internal error, see logs for details. UTC now: {DateTime.UtcNow}." );
             }
 
-            if (successMessage is not null) monitor.Info( successMessage );
+            if( successMessage is not null ) monitor.Info( successMessage );
 
             return pocoDirectory.Success();
         }

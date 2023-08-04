@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CK.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -132,7 +133,8 @@ namespace CK.DB.OIddict.DefaultServer.App
                     endpoints.MapGet
                     (
                         "prune",
-                        async (
+                        async
+                        (
                             OpenIddictTokenManager<Token> tokenManger,
                             OpenIddictAuthorizationManager<Authorization> authorizationManager
                         ) =>
@@ -182,7 +184,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                     );
                     endpoints.MapGet
                     (
-                        "update",
+                        "hard-update",
                         async
                         (
                             string? clientId,
@@ -203,6 +205,38 @@ namespace CK.DB.OIddict.DefaultServer.App
                             (
                                 new ActivityMonitor(),
                                 i => i.ApplicationPoco = pocoGetAppResult
+                            );
+
+                            return updateResult;
+                        }
+                    );
+                    endpoints.MapGet
+                    (
+                        "soft-update",
+                        async
+                        (
+                            string applicationId,
+                            CommandAdapter<ISoftUpdateApplicationCommand, ISimpleCrisResult> updateCommandAdapter,
+                            PocoDirectory pocoDirectory
+                        ) =>
+                        {
+                            var poco = pocoDirectory.Create<IApplicationPoco>();
+                            var updateResult = await updateCommandAdapter.HandleAsync
+                            (
+                                new ActivityMonitor(),
+                                i =>
+                                {
+                                    i.ApplicationPoco = poco;
+                                    i.ApplicationPoco.ApplicationId = Guid.Parse( applicationId );
+                                    i.ApplicationPoco.DisplayName = $"Name changed ! {new Random().Next()}";
+                                    i.ApplicationPoco.RedirectUris = new HashSet<IUriPoco>
+                                    {
+                                        pocoDirectory.Create<IUriPoco>
+                                        (
+                                            uriPoco => uriPoco.Uri = "https://oidcdebugger.com/debug"
+                                        ),
+                                    };
+                                }
                             );
 
                             return updateResult;
