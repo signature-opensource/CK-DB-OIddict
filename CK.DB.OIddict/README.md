@@ -41,6 +41,32 @@ services.AddOpenIddict()
 
 And that is it.
 
+## Application
+
+Of course, you need an application. There are [Cris commands](Cris/ApplicationHandler.cs) that you can
+call directly from your frontend app. You can also do a quick and dirty solution like in
+the [sample](../Samples/CK.DB.OIddict.DefaultServer.App/Startup.cs).
+They are some examples on how to create, read, update or delete an application.
+
+Here is an example to quickly setup an application from the C# code:
+
+```csharp
+// Inject IOpenIddictApplicationManager into _applicationManager
+
+var appDescriptor = new ApplicationDescriptorBuilder
+                    (
+                        "ckdb-default-app",
+                        "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                    )
+                    .WithDisplayName( "CK-DB Default application" )
+                    .EnsureCodeDefaults()
+                    .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                    .Build();
+
+if( await _applicationManager.FindByClientIdAsync( appDescriptor.ClientId! ) == null )
+    await _applicationManager.CreateAsync( appDescriptor );
+```
+
 ## About technical implementation and choices
 
 For developers or this library

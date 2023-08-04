@@ -2,7 +2,9 @@
 
 ## Usage
 
-Implements oidc code flow with endpoints and full OpenIddict Server and Validation.
+Implements **oidc code flow** with endpoints and full OpenIddict Server and Validation.
+
+I strongly recommend starting with the [samples](../Samples).
 
 ### Startup and configuration
 
@@ -19,7 +21,6 @@ services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
         (
             options =>
             {
-                //TODO: Let's see if AuthenticationCookieMode can be set to default.
                 options.CookieMode = AuthenticationCookieMode.RootPath;
                 options.AuthCookieName = ".oidcServerWebFront";
             }
@@ -87,59 +88,58 @@ Here is a simple implementation for [WebFrontAuth](../Samples/CK.DB.OIddict.Defa
 Then you need an actual front end, check out the
 sample [in our example server](../Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
 
+If you have used the default from this README of the sample, consider this:
+
 - The `loginPath` is mapped to `"/"`.
 - The `consentPath` is mapped to `"/Authorization/Consent.html"`
 - You have to handle the AntiForgery by getting the value of the cookie `AntiForgeryCookie` and put it into a form value
-  with name `__RequestVerificationToken` if you have used the defaults in this sample.
+  with name `__RequestVerificationToken`.
+
+#### Login
+
+This is actually a Challenge type of Login.
+Follow these steps:
+
+- Login the user and create a cookie as a standard login.
+- Redirect the user based on the `ReturnUrl` value from the query string.
+
+#### Consent
 
 The consent page is called from the backend with all values sent as a query string. Those values has to be sent back
 with the form.
 The AntiForgery Token has to be send in the form too.
 
+Follow these steps:
+
+- Create a form with 2 buttons : _Accept_ or _Deny_.
+- A click on _Accept_ will add a form input with name `submit.Accept`, value does not matter.
+- A click on _Deny_ will add a form input with name `submit.Deny`, value does not matter.
+- Add all values from the query string to this form as hidden input.
+- Get the cookie value of `AntiForgeryCookie`.
+- Add the value of the cookie to the form as hidden input, with name `__RequestVerificationToken`.
+
 ### Application
 
-Of course, you need an application :
+Of course, you need an application. There are [Cris commands](../CK.DB.OIddict/Cris/ApplicationHandler.cs) that you can call directly from your frontend app. You can also do a quick and dirty solution like in the [sample](../Samples/CK.DB.OIddict.DefaultServer.App/Startup.cs).
+They are some examples on how to create, read, update or delete an application.
+
+Here is an example to quickly setup an application from the C# code:
 
 ```csharp
-// using static OpenIddict.Abstractions.OpenIddictConstants.ConsentTypes;
-// using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
-// using static OpenIddict.Abstractions.OpenIddictConstants.Requirements;
 // Inject IOpenIddictApplicationManager into _applicationManager
 
-await _applicationManager.CreateAsync
-(
-    new OpenIddictApplicationDescriptor
-    {
-        ClientId = "ckdb-default-app",
-        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
-        ConsentType = Explicit,
-        DisplayName = "CK-DB Default application",
-        RedirectUris =
-        {
-            new Uri( "https://oidcdebugger.com/debug" ),
-            new Uri( "https://localhost:5044/signin-oidc" ),
-        },
-        PostLogoutRedirectUris =
-        {
-            new Uri( "https://localhost:7273/callback/logout/local" ),
-        },
-        Permissions =
-        {
-            Endpoints.Authorization,
-            Endpoints.Logout,
-            Endpoints.Token,
-            GrantTypes.AuthorizationCode,
-            ResponseTypes.Code,
-            Scopes.Email,
-            Scopes.Profile,
-            Scopes.Roles,
-        },
-        Requirements =
-        {
-            Features.ProofKeyForCodeExchange,
-        },
-    }
-);
+var appDescriptor = new ApplicationDescriptorBuilder
+                    (
+                        "ckdb-default-app",
+                        "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
+                    )
+                    .WithDisplayName( "CK-DB Default application" )
+                    .EnsureCodeDefaults()
+                    .AddRedirectUri( new Uri( "https://localhost:5044/signin-oidc" ) )
+                    .Build();
+
+if( await _applicationManager.FindByClientIdAsync( appDescriptor.ClientId! ) == null )
+    await _applicationManager.CreateAsync( appDescriptor );
 ```
 
 ### Tests

@@ -10,107 +10,22 @@
 | CK.DB.OIddict        | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.OIddict.svg)](https://www.nuget.org/packages/CK.DB.OIddict/)               | Stores implementation                                           |
 | CK.DB.AspNet.OIddict | [![Nuget](https://img.shields.io/nuget/vpre/CK.DB.AspNet.OIddict.svg)](https://www.nuget.org/packages/CK.DB.AspNet.OIddict/) | AspNet code flow implementation (depend on CK.DB.OIddict) |
 
-Start with the AspNet package to quickly try it out of the box.
+CK-DB-OpenIddict is aimed to create an openid connect server with all the backend implementation of the code flow out of the box.
+It stores data on a SqlServer database and uses CKSetup to manage it.
 
-It is recommended to give a try and follow the **Getting started** section right below.
-If you already are familiar with OpenIddict, or want to go a little bit deeper, skip this section and read **About** section or directly [CK.DB.AspNet.OIddict/README.md](CK.DB.AspNet.OIddict/README.md).
+You have to handle only what you need to choose, the complexity is already handled.
+It is of course configurable but work out of the box. Still, you have to register it into your startup, of course. It is based on [OpenIddict](https://github.com/openiddict) hence register the same way.
+
+I strongly recommend starting with the [samples](Samples).
 
 ## Getting started
 
 Implements *oidc code flow* with endpoints and full OpenIddict Server and Validation.
 
-**WebFrontAuth Quick start.**
+Start with `CK.DB.AspNet.OIddict` package to quickly try it out of the box.
+You can follow instructions to start with it: [CK.DB.AspNet.OIddict/README.md](CK.DB.AspNet.OIddict/README.md).
 
-First, configure OpenIddict and WebFrontAuth services:
-
-```csharp
-var connectionString = "Server=.;Database=CKOpenIddictDefault;Integrated Security=True;TrustServerCertificate=true";
-services.AddCKDatabase( new ActivityMonitor(), Assembly.GetEntryAssembly()!, connectionString );
-
-services.AddAuthentication( WebFrontAuthOptions.OnlyAuthenticationScheme )
-        .AddWebFrontAuth
-        (
-            options =>
-            {
-                //TODO: Let's see if AuthenticationCookieMode can be set to default.
-                options.CookieMode = AuthenticationCookieMode.RootPath;
-                options.AuthCookieName = ".oidcServerWebFront";
-            }
-        );
-
-services.AddOpenIddict()
-        .AddCore( builder => builder.UseOpenIddictCoreSql() )
-        .AddServer
-        (
-            builder =>
-            {
-                builder.UseOpenIddictServerAsp
-                       (
-                           WebFrontAuthOptions.OnlyAuthenticationScheme,
-                           "/",
-                           "/Authorization/Consent.html"
-                       )
-                       .WithDefaultAntiForgery( o => o.FormFieldName = "__RequestVerificationToken" );
-
-                builder.AddDevelopmentEncryptionCertificate()
-                       .AddDevelopmentSigningCertificate();
-
-                builder.RegisterScopes
-                (
-                    Scopes.Email,
-                    Scopes.Profile,
-                    Scopes.Roles,
-                    Scopes.OpenId,
-                    "authinfo"
-                );
-                builder.RegisterClaims( Claims.Name, Claims.Email, Claims.Profile );
-            }
-        )
-        .AddValidation
-        (
-            builder =>
-            {
-                builder.UseLocalServer();
-
-                builder.UseAspNetCore();
-            }
-        );
-```
-
-On the Configure method, add the default AntiForgery middleware between auth and endpoints.
-
-
-```csharp
-app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.UseDefaultAntiForgeryMiddleware( "AntiForgeryCookie" );
-
-app.UseEndpoints();
-```
-
-Next, you want to [implement `IIdentityStrategy`](./CK.DB.AspNet.OIddict/README.md) to validate the user (against a database usually) and map the claims.
-Here is a simple implementation for [WebFrontAuth](./Samples/CK.DB.OIddict.DefaultServer.App/WfaIdentityStrategy.cs).
-
-Then you need an actual front end, check out the sample [in our example server](Samples/CK.DB.OIddict.DefaultServer.App/WebFrontAuth) that you can copy paste.
-
-- The `loginPath` is mapped to `"/"`.
-- The `consentPath` is mapped to `"/Authorization/Consent.html"`
-- You have to handle the AntiForgery by getting the value of the cookie `AntiForgeryCookie` and put it into a form value with name `__RequestVerificationToken` if you have used the defaults in this sample.
-
-The consent page is called from the backend with all values sent as a query string. Those values has to be sent back with the form.
-The AntiForgery Token has to be send in the form too.
-
-To finish, [create an oidc application](./CK.DB.AspNet.OIddict/README.md) that fits your needs.
-
-### Quick test
-
-Check out [OpenIddict Sample](https://github.com/openiddict/openiddict-samples/blob/dev/samples/Velusia/Velusia.Server/Worker.cs) to create an application.
-
-Go ahead and try the flow. You can use the [client example](Samples/SLog.AuthTest)
-or [OpenID Connect \<debugger\/\>](https://oidcdebugger.com) for example.
+If you encounter any issue, check first the [FAQ](FAQ.md).
 
 ### Create an administration panel with Cris
 
@@ -125,8 +40,3 @@ oidc provider !
 - [SLog.AuthTest](Samples/SLog.AuthTest) => A simple oidc client bound to the DefaultServer.
 - [CK.DB.OIddict.DefaultClient](Samples/CK.DB.OIddict.DefaultClient) => Not used yet. May be used as the SLog.AuthTest, but with OpenIddict client. Why
   not.
-
-## TODO
-
-- Add enough Cris commands to provide a way to be able to manage an oidc application management.
-- Make most of classes internal
