@@ -10,6 +10,8 @@ environment:
   SqlServer/MasterConnectionString: Server=(local)\SQL2017;Database=master;User ID=sa;Password=Password12!
   CODECAKEBUILDER_SECRET_KEY:
     secure: 8VAzdXgUQaJyFoU3WLf2iPFV/8zPDm9qV4TfOpx8/rg=
+install:
+  - ps: Install-Product node x64
 test: off
 on_finish:
   - ps: "'Get-ChildItem -Recurse *.log | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName ''Log files'' }'"
