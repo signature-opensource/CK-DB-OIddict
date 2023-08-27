@@ -47,7 +47,7 @@ namespace CK.DB.OIddict.Commands
         /// <summary>
         /// Gets the post-logout redirect URIs associated with the application.
         /// </summary>
-        public HashSet<IUriPoco>? PostLogoutRedirectUris { get; set; }
+        public HashSet<string>? PostLogoutRedirectUris { get; set; }
 
         /// <summary>
         /// Gets the additional properties associated with the application.
@@ -57,7 +57,7 @@ namespace CK.DB.OIddict.Commands
         /// <summary>
         /// Gets the redirect URIs associated with the application.
         /// </summary>
-        public HashSet<IUriPoco>? RedirectUris { get; set; }
+        public HashSet<string>? RedirectUris { get; set; }
 
         /// <summary>
         /// Gets the requirements associated with the application.
@@ -73,11 +73,6 @@ namespace CK.DB.OIddict.Commands
     public interface ICultureInfoPoco : IPoco
     {
         string CultureName { get; set; }
-    }
-
-    public interface IUriPoco : IPoco
-    {
-        string Uri { get; set; }
     }
 
     public interface IPropertiesPoco : IPoco
@@ -207,13 +202,13 @@ namespace CK.DB.OIddict.Commands
                 p => p.Value
             );
 
-        internal IUriPoco CreateUriPoco( Uri uri ) => _pocoDirectory.Create<IUriPoco>( p => p.Uri = uri.ToString() );
+        internal string CreateUriPoco( Uri uri ) => uri.ToString();
 
-        internal Uri CreateUri( IUriPoco poco ) => new( poco.Uri );
+        internal Uri CreateUri( string poco ) => new( poco );
 
-        internal HashSet<IUriPoco>? CreateUrisPoco( HashSet<Uri>? uris ) => uris?.Select( CreateUriPoco ).ToHashSet();
+        internal HashSet<string>? CreateUrisPoco( HashSet<Uri>? uris ) => uris?.Select( CreateUriPoco ).ToHashSet();
 
-        internal HashSet<Uri>? CreateUris( HashSet<IUriPoco>? poco ) => poco?.Select( CreateUri ).ToHashSet();
+        internal HashSet<Uri>? CreateUris( HashSet<string>? poco ) => poco?.Select( CreateUri ).ToHashSet();
 
         internal Dictionary<string, JsonElement>? CreateProperties( IPropertiesPoco? poco )
             => FromJson<Dictionary<string, JsonElement>>( poco?.PropertiesJson );

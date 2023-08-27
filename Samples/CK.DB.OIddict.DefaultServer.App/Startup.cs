@@ -229,12 +229,9 @@ namespace CK.DB.OIddict.DefaultServer.App
                                     i.ApplicationPoco = poco;
                                     i.ApplicationPoco.ApplicationId = Guid.Parse( applicationId );
                                     i.ApplicationPoco.DisplayName = $"Name changed ! {new Random().Next()}";
-                                    i.ApplicationPoco.RedirectUris = new HashSet<IUriPoco>
+                                    i.ApplicationPoco.RedirectUris = new HashSet<string>
                                     {
-                                        pocoDirectory.Create<IUriPoco>
-                                        (
-                                            uriPoco => uriPoco.Uri = "https://oidcdebugger.com/debug"
-                                        ),
+                                        "https://oidcdebugger.com/debug"
                                     };
                                 }
                             );

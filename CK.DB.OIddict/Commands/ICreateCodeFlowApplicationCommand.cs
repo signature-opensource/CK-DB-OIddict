@@ -8,11 +8,11 @@ namespace CK.DB.OIddict.Commands
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
         public string DisplayName { get; set; }
-        public IUriPoco RedirectUri { get; set; }
+        public string RedirectUri { get; set; }
 
         // Optional properties
         public string? Scope { get; set; }
-        public HashSet<IUriPoco>? PostLogoutRedirectUris { get; set; }
-        public HashSet<IUriPoco>? RedirectUris { get; set; }
+        public HashSet<string>? PostLogoutRedirectUris { get; set; }
+        public HashSet<string>? RedirectUris { get; set; }
     }
 }

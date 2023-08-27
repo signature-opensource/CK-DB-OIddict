@@ -56,17 +56,14 @@ namespace CK.DB.OIddict.DefaultServer.App
                     ap.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
                     ap.ConsentType = OpenIddictConstants.ConsentTypes.Explicit;
                     ap.DisplayName = "CK-DB Default application";
-                    ap.RedirectUris = new HashSet<IUriPoco>
+                    ap.RedirectUris = new HashSet<string>
                     {
-                        _pocoDirectory.Create<IUriPoco>( up => up.Uri = "https://localhost:7273/callback/login/local" ),
-                        _pocoDirectory.Create<IUriPoco>( up => up.Uri = "https://localhost:5044/signin-oidc" ),
+                        new( "https://localhost:7273/callback/login/local" ),
+                        new( "https://localhost:5044/signin-oidc" ),
                     };
-                    ap.PostLogoutRedirectUris = new HashSet<IUriPoco>
+                    ap.PostLogoutRedirectUris = new HashSet<string>
                     {
-                        _pocoDirectory.Create<IUriPoco>
-                        (
-                            up => up.Uri = "https://localhost:7273/callback/logout/local"
-                        ),
+                        "https://localhost:7273/callback/logout/local",
                     };
                     ap.Permissions = new HashSet<string>
                     {
@@ -101,8 +98,7 @@ namespace CK.DB.OIddict.DefaultServer.App
                     command.ClientId = "ckdb-code-flow-easy";
                     command.ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654";
                     command.DisplayName = "My code flow app";
-                    command.RedirectUri = _pocoDirectory
-                    .Create<IUriPoco>( up => up.Uri = "https://localhost:5044/signin-oidc" );
+                    command.RedirectUri = "https://localhost:5044/signin-oidc";
                 }
             );
 
