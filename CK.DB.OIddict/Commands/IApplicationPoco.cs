@@ -38,8 +38,9 @@ namespace CK.DB.OIddict.Commands
 
         /// <summary>
         /// Gets the localized display names associated with the application.
+        /// Key: CultureName, Value: DisplayName.
         /// </summary>
-        public Dictionary<ICultureInfoPoco, string>? DisplayNames { get; set; }
+        public Dictionary<string, string>? DisplayNames { get; set; }
 
         /// <summary>Gets the permissions associated with the application.</summary>
         public HashSet<string>? Permissions { get; set; }
@@ -68,11 +69,6 @@ namespace CK.DB.OIddict.Commands
         /// Gets or sets the application type associated with the application.
         /// </summary>
         public string? Type { get; set; }
-    }
-
-    public interface ICultureInfoPoco : IPoco
-    {
-        string CultureName { get; set; }
     }
 
     public interface IPropertiesPoco : IPoco
@@ -177,15 +173,11 @@ namespace CK.DB.OIddict.Commands
             return app;
         }
 
-        internal ICultureInfoPoco CreateCultureInfoPoco( CultureInfo cultureInfo )
-            => _pocoDirectory.Create<ICultureInfoPoco>
-            (
-                p => p.CultureName = cultureInfo.Name
-            );
+        internal string CreateCultureInfoPoco( CultureInfo cultureInfo ) => cultureInfo.Name;
 
-        internal CultureInfo CreateCultureInfo( ICultureInfoPoco poco ) => new( poco.CultureName );
+        internal CultureInfo CreateCultureInfo( string poco ) => new( poco );
 
-        internal Dictionary<ICultureInfoPoco, string>? CreateDisplayNamesPoco
+        internal Dictionary<string, string>? CreateDisplayNamesPoco
         (
             Dictionary<CultureInfo, string>? displayNames
         )
@@ -195,7 +187,7 @@ namespace CK.DB.OIddict.Commands
                 d => d.Value
             );
 
-        internal Dictionary<CultureInfo, string>? CreateDisplayNames( Dictionary<ICultureInfoPoco, string>? poco )
+        internal Dictionary<CultureInfo, string>? CreateDisplayNames( Dictionary<string, string>? poco )
             => poco?.ToDictionary
             (
                 p => CreateCultureInfo( p.Key ),
