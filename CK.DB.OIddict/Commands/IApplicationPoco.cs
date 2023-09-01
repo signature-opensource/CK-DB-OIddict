@@ -52,8 +52,9 @@ namespace CK.DB.OIddict.Commands
 
         /// <summary>
         /// Gets the additional properties associated with the application.
+        /// Must be Json.
         /// </summary>
-        public IPropertiesPoco? Properties { get; set; }
+        public string? Properties { get; set; }
 
         /// <summary>
         /// Gets the redirect URIs associated with the application.
@@ -69,11 +70,6 @@ namespace CK.DB.OIddict.Commands
         /// Gets or sets the application type associated with the application.
         /// </summary>
         public string? Type { get; set; }
-    }
-
-    public interface IPropertiesPoco : IPoco
-    {
-        string? PropertiesJson { get; set; }
     }
 
     public class ApplicationPocoFactory : IAutoService
@@ -102,10 +98,11 @@ namespace CK.DB.OIddict.Commands
         );
 
         public Application Create( IApplicationPoco poco )
-        {//TODO: maybe it has to have an ApplicationId
+        {
+            //TODO: maybe it has to have an ApplicationId
             var app = poco.ApplicationId is not null
-            ? new Application() { ApplicationId = poco.ApplicationId.Value }
-            : new Application();
+                      ? new Application() { ApplicationId = poco.ApplicationId.Value }
+                      : new Application();
 
             app.ClientId = poco.ClientId;
             app.ClientSecret = poco.ClientSecret;
@@ -202,10 +199,9 @@ namespace CK.DB.OIddict.Commands
 
         internal HashSet<Uri>? CreateUris( HashSet<string>? poco ) => poco?.Select( CreateUri ).ToHashSet();
 
-        internal Dictionary<string, JsonElement>? CreateProperties( IPropertiesPoco? poco )
-            => FromJson<Dictionary<string, JsonElement>>( poco?.PropertiesJson );
+        internal Dictionary<string, JsonElement>? CreateProperties( string? poco )
+            => FromJson<Dictionary<string, JsonElement>>( poco );
 
-        internal IPropertiesPoco CreatePropertiesPoco( Dictionary<string, JsonElement>? properties )
-            => _pocoDirectory.Create<IPropertiesPoco>( p => p.PropertiesJson = ToJson( properties ) );
+        internal string? CreatePropertiesPoco( Dictionary<string, JsonElement>? properties ) => ToJson( properties );
     }
 }
