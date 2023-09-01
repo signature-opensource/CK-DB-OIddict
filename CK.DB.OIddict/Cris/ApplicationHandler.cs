@@ -82,11 +82,11 @@ namespace CK.DB.OIddict.Cris
             var application = applicationPocoFactory.CreateDescriptor( command.ApplicationPoco );
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                async () => await applicationManager.CreateAsync( application ),
-                monitor
-            );
+                   (
+                       pocoDirectory,
+                       async () => await applicationManager.CreateAsync( application ),
+                       monitor
+                   );
         }
 
         [CommandHandler]
@@ -120,11 +120,11 @@ namespace CK.DB.OIddict.Cris
             var descriptor = builder.Build();
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                async () => await applicationManager.CreateAsync( descriptor ),
-                monitor
-            );
+                   (
+                       pocoDirectory,
+                       async () => await applicationManager.CreateAsync( descriptor ),
+                       monitor
+                   );
         }
 
         [CommandHandler]
@@ -140,9 +140,9 @@ namespace CK.DB.OIddict.Cris
             Throw.CheckNotNullArgument( command.ApplicationPoco.ApplicationId );
 
             var client = await applicationManager.FindByIdAsync
-            (
-                command.ApplicationPoco.ApplicationId.Value.ToString()
-            );
+                         (
+                             command.ApplicationPoco.ApplicationId.Value.ToString()
+                         );
 
             if( client is null )
                 return pocoDirectory.Failure( "Application not found." );
@@ -155,11 +155,11 @@ namespace CK.DB.OIddict.Cris
                                   && application.ClientSecret != previousValues.ClientSecret;
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                shouldUpdateSecret ? UpdateSecret : Update,
-                monitor
-            );
+                   (
+                       pocoDirectory,
+                       shouldUpdateSecret ? UpdateSecret : Update,
+                       monitor
+                   );
 
             async Task Update() => await applicationManager.UpdateAsync( application );
             async Task UpdateSecret() => await applicationManager.UpdateAsync( application, application.ClientSecret! );
@@ -178,9 +178,9 @@ namespace CK.DB.OIddict.Cris
             Throw.CheckNotNullArgument( command.ApplicationPoco.ApplicationId );
 
             var client = await applicationManager.FindByIdAsync
-            (
-                command.ApplicationPoco.ApplicationId.Value.ToString()
-            );
+                         (
+                             command.ApplicationPoco.ApplicationId.Value.ToString()
+                         );
 
             if( client is null )
                 return pocoDirectory.Failure( "Application not found." );
@@ -208,11 +208,11 @@ namespace CK.DB.OIddict.Cris
             if( shouldUpdateSecret is false ) application.ClientSecret = previousValues.ClientSecret;
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                shouldUpdateSecret ? UpdateSecret : Update,
-                monitor
-            );
+                   (
+                       pocoDirectory,
+                       shouldUpdateSecret ? UpdateSecret : Update,
+                       monitor
+                   );
 
             async Task Update() => await applicationManager.UpdateAsync( application );
             async Task UpdateSecret() => await applicationManager.UpdateAsync( application, application.ClientSecret! );
@@ -266,11 +266,36 @@ namespace CK.DB.OIddict.Cris
             application.DisplayName = command.DisplayName;
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                async () => await applicationManager.UpdateAsync( application ),
-                monitor
-            );
+                   (
+                       pocoDirectory,
+                       async () => await applicationManager.UpdateAsync( application ),
+                       monitor
+                   );
+        }
+
+        [CommandHandler]
+        public async Task<ISimpleCrisResult> AddApplicationRedirectUriAsync
+        (
+            IAddApplicationRedirectUriCommand command,
+            PocoDirectory pocoDirectory,
+            IOpenIddictApplicationManager applicationManager,
+            IActivityMonitor monitor
+        )
+        {
+            var client = await applicationManager.FindByIdAsync( command.ApplicationId.ToString() );
+
+            if( client is null ) return pocoDirectory.Failure( "Application not found." );
+
+            var application = (Application)client;
+            application.RedirectUris ??= new HashSet<Uri>();
+            application.RedirectUris.Add( new Uri( command.RedirectUri ) );
+
+            return await TryCatchLogAsync
+                   (
+                       pocoDirectory,
+                       async () => await applicationManager.UpdateAsync( application ),
+                       monitor
+                   );
         }
 
         [CommandHandler]
@@ -290,12 +315,12 @@ namespace CK.DB.OIddict.Cris
             var application = (Application)client;
 
             return await TryCatchLogAsync
-            (
-                pocoDirectory,
-                async () => await applicationManager.DeleteAsync( application ),
-                monitor,
-                $"Application {application.ApplicationId} with clientId {application.ClientId} deleted."
-            );
+                   (
+                       pocoDirectory,
+                       async () => await applicationManager.DeleteAsync( application ),
+                       monitor,
+                       $"Application {application.ApplicationId} with clientId {application.ClientId} deleted."
+                   );
         }
 
         private async Task<ISimpleCrisResult> TryCatchLogAsync
